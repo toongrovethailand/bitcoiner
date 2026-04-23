@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Solo LARP is inspired by Right Shift.</title>
+    <meta name="title" content="Bitcoin Solo LARP is inspired by Right Shift.">
+    <meta name="description" content="Miner เป็นเพียงคนงาน ส่วน Validator คือผู้รักษากติกาโลก">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://toongrovethailand.github.io/bitcoin/bitcoinsololarp.html">
+    <meta property="og:title" content="Bitcoin Solo LARP is inspired by Right Shift.">
+    <meta property="og:description" content="Miner เป็นเพียงคนงาน ส่วน Validator คือผู้รักษากติกาโลก">
+    <meta property="og:image" content="https://toongrovethailand.github.io/bitcoin/Images/sololarp.png">
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/btc.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./asset/css/styles.css">
+</head>
+<body class="text-slate-300 min-h-screen p-2 md:p-4 flex items-start justify-center relative pb-40"> 
+
+<div class="max-w-[1400px] w-full glass-panel rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 my-4 mb-16">
+    <div id="part1-mempool"></div>
+
+    <div class="p-4 md:p-6 flex flex-col gap-6 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div id="part2-miner"></div>
+            <div id="part3-validator"></div>
+        </div>
+    </div>
+</div>
+
+<div id="log-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#0a0a0a] border border-slate-700 rounded-xl flex flex-col w-full max-w-3xl h-[70vh] shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content">
+        <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
+            <span class="text-slate-400 font-mono text-sm font-bold flex items-center gap-2">💻 node_validation.log</span>
+            <button onclick="App.toggleModal('log-modal', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด (Close)</button>
+        </div>
+        <div id="event-log" class="p-5 font-mono text-sm overflow-y-auto h-full space-y-2 text-slate-300 pb-10">
+            <div class="text-slate-500 mb-2">Bitcoin Core Daemon version v26.0.0</div>
+            <div class="text-cyan-600">> ระบบพร้อมทำงาน รอรับข้อมูล... <span class="animate-pulse">_</span></div>
+        </div>
+    </div>
+</div>
+
+<div id="genesis-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#0a0a0a] border border-amber-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(245,158,11,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content">
+        <div class="bg-amber-950/40 px-4 py-3 border-b border-amber-800/50 flex justify-between items-center">
+            <span class="text-amber-400 font-bold flex items-center gap-2">🔗 Block #0 (Genesis Block)</span>
+            <button onclick="App.toggleModal('genesis-modal', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        <div class="p-6 font-mono text-xs md:text-sm text-slate-300 space-y-3">
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Hash:</span><span class="col-span-2 text-cyan-400 cursor-pointer hover:text-cyan-300 transition-colors break-all">000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Version:</span><span class="col-span-2 text-white">0x00000001 (1)</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Prev Hash:</span><span class="col-span-2 text-purple-400 break-all">0000000000000000000000000000000000000000000000000000000000000000</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Merkle Root:</span><span class="col-span-2 text-fuchsia-400 break-all">4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Timestamp:</span><span class="col-span-2 text-white">2009-01-03 18:15:05 (1231006505)</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Bits (Target):</span><span class="col-span-2 text-amber-400">0x1d00ffff</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Nonce:</span><span class="col-span-2 text-emerald-400 font-bold">2,083,236,893</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Reward:</span><span class="col-span-2 text-emerald-400">5,000,000,000 sats (Unspendable)</span></div>
+            
+            <div class="mt-4 bg-gradient-to-r from-amber-950/50 to-amber-900/10 p-4 rounded-xl border border-amber-500/30 relative overflow-hidden shadow-[inset_0_0_20px_rgba(245,158,11,0.1)]">
+                <div class="absolute top-0 left-0 w-1 bg-amber-500 h-full shadow-[0_0_10px_rgba(245,158,11,0.8)]"></div>
+                <div class="flex items-start gap-3 relative z-10">
+                    <div class="text-2xl animate-pulse mt-1">💡</div>
+                    <div>
+                        <span class="text-amber-400 font-bold text-sm tracking-wide block mb-1">รู้หรือไม่? (Did you know...)</span>
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-3 font-sans">
+                            ในบล็อกแรกของโลก ซาโตชิ นากาโมโตะ ได้ซ่อนข้อความประวัติศาสตร์ไว้ในข้อมูล <b>Coinbase Transaction</b> เพื่อเป็นหลักฐานระบุวันที่เริ่มต้นเชน และเสียดสีระบบธนาคารแบบดั้งเดิม:
+                        </p>
+                        <div class="bg-black/80 px-3 py-2.5 rounded-lg border border-amber-700/50 w-full relative">
+                            <span class="text-amber-300 font-mono text-sm sm:text-base italic break-words block text-center">
+                                "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="latest-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#0a0a0a] border border-cyan-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(34,211,238,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content">
+        <div class="bg-cyan-950/40 px-4 py-3 border-b border-cyan-800/50 flex justify-between items-center">
+            <span class="text-cyan-400 font-bold flex items-center gap-2" id="latest-modal-title">🔗 Block Details</span>
+            <button onclick="App.toggleModal('latest-modal', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        <div class="p-6 font-mono text-xs md:text-sm text-slate-300 space-y-3">
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Hash:</span><span class="col-span-2 text-cyan-400 cursor-pointer hover:text-cyan-300 transition-colors" id="latest-modal-hash" onclick="App.toggleHash(this)">...</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Version:</span><span class="col-span-2 text-white" id="latest-modal-version">...</span></div>
+            
+            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 flex flex-col gap-2 my-2 relative z-10">
+                <div class="flex justify-between items-center w-full">
+                    <span class="text-slate-500 uppercase text-[10px] font-bold shrink-0">Previous Hash</span>
+                    <button onclick="App.verifyLink()" class="text-xs bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 px-3 py-1.5 rounded hover:bg-cyan-600/40 transition-all cursor-pointer active:scale-95 select-none whitespace-nowrap shrink-0 relative z-50">ตรวจสอบความเชื่อมโยง</button>
+                </div>
+                <div class="w-full cursor-pointer hover:bg-slate-800/80 p-2 -mx-2 rounded-lg transition-colors relative z-40" onclick="App.toggleHash(document.getElementById('latest-modal-prev-hash'))">
+                    <span class="text-purple-400 block w-full select-none" id="latest-modal-prev-hash">...</span>
+                </div>
+                <div id="verify-result" class="hidden mt-1 p-2 rounded text-xs bg-black/40 border border-slate-700"><p id="verify-text"></p></div>
+            </div>
+            
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2 pt-1 items-center relative z-10">
+                <span class="text-slate-500 shrink-0">Merkle Root:</span>
+                <div class="col-span-2 w-full cursor-pointer hover:bg-slate-800/80 p-2 -ml-2 rounded-lg transition-colors relative z-40" onclick="App.toggleHash(document.getElementById('latest-modal-merkle'))">
+                    <span class="text-fuchsia-400 block w-full select-none" id="latest-modal-merkle">...</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Timestamp:</span><span class="col-span-2 text-white" id="latest-modal-time">...</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Bits (Target):</span><span class="col-span-2 text-amber-400" id="latest-modal-bits">...</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Nonce:</span><span class="col-span-2 text-emerald-400 font-bold" id="latest-modal-nonce">...</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2 pt-2"><span class="text-slate-500">Miner:</span><span class="col-span-2 text-white font-bold bg-slate-800 px-2 py-0.5 rounded w-max" id="latest-modal-miner">...</span></div>
+            <div class="grid grid-cols-3 border-b border-slate-800 pb-2"><span class="text-slate-500">Reward:</span><span class="col-span-2 text-emerald-400" id="latest-modal-reward">...</span></div>
+        </div>
+    </div>
+</div>
+
+<div id="hash-modal" class="fixed inset-0 z-[250] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="hash-modal-content" class="bg-[#050B14]/95 border border-emerald-500/40 rounded-xl flex flex-col w-full max-w-lg shadow-[0_0_80px_rgba(16,185,129,0.2)] overflow-hidden transform scale-95 transition-all duration-300 modal-content relative backdrop-blur-xl pointer-events-none">
+        <div class="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/20 rounded-full blur-[50px] pointer-events-none"></div>
+        <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-[50px] pointer-events-none"></div>
+        <div class="bg-emerald-950/40 px-4 py-3 border-b border-emerald-800/50 flex justify-between items-center relative z-10">
+            <span class="text-emerald-400 font-mono font-bold flex items-center gap-2">
+                <svg class="w-4 h-4 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                ASIC Miner : Proof of Work
+            </span>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span id="mining-timer" class="text-emerald-300 font-mono font-bold text-sm bg-black/50 px-2 py-0.5 rounded border border-emerald-500/30 w-16 sm:w-20 text-center tracking-wider">00:00.00</span>
+                <button id="btn-minimize-hash" onclick="App.minimizeMining()" class="text-xs font-bold bg-slate-800 text-slate-300 hover:text-white px-2 py-1 rounded border border-slate-600 transition-colors cursor-pointer">➖ พับ</button>
+                <button onclick="App.abortMining()" class="text-xs font-bold bg-rose-900/80 text-rose-300 hover:text-white px-2 py-1 rounded border border-rose-700 transition-colors cursor-pointer">❌ ยกเลิก</button>
+            </div>
+        </div>
+        <div id="hash-modal-body" class="p-6 relative z-10 transition-all duration-300">
+            <div id="hash-terminal-modal" class="bg-[#020617]/80 border border-slate-800 rounded-lg p-4 font-mono text-xs text-emerald-400 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] relative overflow-y-auto flex flex-col h-[220px] scroll-smooth backdrop-blur-sm">
+                <div class="absolute inset-0 bg-gradient-to-b from-[#020617] via-transparent to-transparent pointer-events-none z-10 h-8 sticky top-0"></div>
+                <div id="hash-output-modal" class="leading-relaxed space-y-1 break-all text-[11px] sm:text-xs relative z-0 mt-auto"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="tour-overlay" class="fixed inset-0 bg-black/40 z-[150] hidden opacity-0 transition-opacity duration-500"></div>
+
+<div id="tour-dialog" class="fixed bottom-24 sm:bottom-28 left-1/2 transform -translate-x-1/2 z-[160] w-[90%] max-w-md bg-slate-900/80 border border-cyan-500/40 rounded-2xl shadow-[0_10px_40px_rgba(34,211,238,0.2)] p-5 hidden opacity-0 transition-all duration-500 translate-y-8">
+    <div class="flex justify-between items-center mb-3 border-b border-slate-800/50 pb-3">
+        <span class="text-xs font-bold text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded border border-cyan-900/50">ขั้นตอนที่ <span id="tour-step-num">1</span>/12</span>
+        <button onclick="App.endTour()" class="text-slate-500 hover:text-rose-400 transition-colors text-sm font-bold bg-slate-800/50 hover:bg-slate-700/80 px-2 py-1 rounded">✕ ปิดไกด์</button>
+    </div>
+    <h3 id="tour-title" class="text-white font-bold text-lg mb-2 drop-shadow-md">ยินดีต้อนรับสู่ Simulator!</h3>
+    <p id="tour-desc" class="text-slate-200 text-sm leading-relaxed mb-5 drop-shadow">ระบบนี้จะพาคุณเรียนรู้วิธีการเป็นนักขุด Bitcoin ให้คุณทำความเข้าใจไปทีละขั้นตอน</p>
+    <div class="flex justify-between items-center">
+        <button id="btn-tour-prev" onclick="App.prevTour()" class="text-slate-300 hover:text-white text-sm font-medium px-4 py-2 rounded bg-slate-800/60 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">ย้อนกลับ</button>
+        <button id="btn-tour-next" onclick="App.nextTour()" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-lg shadow-[0_0_15px_rgba(34,211,238,0.3)] transition-all">ถัดไป ➔</button>
+    </div>
+</div>
+
+<div id="welcome-modal" class="hidden opacity-0 fixed inset-0 bg-black/40 z-[300] flex items-center justify-center p-4 transition-opacity duration-300">
+    <div class="bg-slate-900/80 border border-cyan-500/40 rounded-2xl max-w-md w-full p-6 text-center shadow-[0_0_50px_rgba(34,211,238,0.2)] transform scale-100 transition-transform duration-300">
+        <div class="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(34,211,238,0.4)]">
+            <span class="text-3xl animate-bounce mt-1">👋</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2 drop-shadow-md">ยินดีต้อนรับสู่ Simulator!</h2>
+        <p class="text-slate-200 text-sm mb-6 leading-relaxed drop-shadow">ระบบนี้จำลองการทำงานจริงของ Bitcoin Node<br>คุณต้องการให้เราแนะนำวิธีการเล่นทีละขั้นตอนก่อนหรือไม่?</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <button onclick="App.closeWelcome(true)" class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all">💡 ดูวิธีเล่น (แนะนำ)</button>
+            <button onclick="App.closeWelcome(false)" class="flex-1 bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-bold py-3 px-4 rounded-xl border border-slate-500/50 transition-all">ลุยเลย! (ข้าม)</button>
+        </div>
+    </div>
+</div>
+
+<div id="merkle-tree-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-2 sm:p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-fuchsia-600/50 rounded-xl flex flex-col w-full max-w-4xl h-[85vh] shadow-[0_0_50px_rgba(217,70,239,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-fuchsia-950/40 px-4 py-3 border-b border-fuchsia-800/50 flex justify-between items-center z-10">
+            <span class="text-fuchsia-400 font-bold flex items-center gap-2">🌳 Merkle Tree Visualizer</span>
+            <button onclick="App.toggleModal('merkle-tree-modal', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด (Close)</button>
+        </div>
+        <div class="p-4 flex-grow overflow-auto relative flex flex-col justify-end items-center" id="merkle-tree-canvas"></div>
+        <div class="bg-slate-900 p-3 border-t border-slate-800 text-xs text-slate-400 flex justify-between items-center z-10">
+            <span>💡 <b>กฎเลขคี่:</b> หากมีรายการเป็นเลขคี่ ธุรกรรมตัวสุดท้ายจะถูก <span class="text-amber-400 border border-amber-500/50 border-dashed px-1 bg-amber-900/30 rounded">โคลนตัวเอง</span> เพื่อให้จับคู่ได้</span>
+            <button onclick="document.getElementById('cb-doublespend').click()" class="bg-rose-900/30 text-rose-400 border border-rose-500/50 hover:bg-rose-800/50 px-2 py-1 rounded transition-colors">😈 ลองกดโกง (Double Spend)</button>
+        </div>
+    </div>
+</div>
+
+<div class="fixed bottom-0 left-0 right-0 w-full z-[150] bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-slate-800 shadow-[0_-15px_30px_rgba(0,0,0,0.6)] pt-3 px-3 sm:px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+    <div class="max-w-[1400px] mx-auto flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <button id="btn-mine" onclick="App.mineBlock()" class="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl border border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all cursor-pointer flex justify-center items-center gap-1.5">
+            ⛏️ เริ่มขุด (PoW)
+        </button>
+        <button onclick="App.toggleModal('log-modal', true)" class="flex-1 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-slate-300 text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all border border-slate-700 shadow flex justify-center items-center gap-1.5">
+            📜 ดู Log
+        </button>
+        <button onclick="App.resetSim()" class="flex-1 bg-gradient-to-r from-rose-900 to-red-950 hover:from-rose-800 hover:to-red-900 text-rose-200 text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all border border-rose-800/50 shadow flex justify-center items-center gap-1.5">
+            ⚠️ เริ่มใหม่
+        </button>
+        <button onclick="App.startTour()" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all border border-indigo-400/30 shadow-[0_0_15px_rgba(99,102,241,0.3)] flex justify-center items-center gap-1.5">
+            💡 สอนวิธีเล่น
+        </button>
+    </div>
+</div>
+
+<script>
+    Promise.all([
+        fetch('mempool.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ mempool.html'); return res.text(); }),
+        fetch('miner.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ miner.html'); return res.text(); }),
+        fetch('validator.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ validator.html'); return res.text(); })
+    ]).then(([p1, p2, p3]) => {
+        
+        document.getElementById('part1-mempool').innerHTML = p1;
+        document.getElementById('part2-miner').innerHTML = p2;
+        document.getElementById('part3-validator').innerHTML = p3;
+
+        const loadScript = (src) => new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = () => reject(new Error(`โหลดไฟล์ ${src} ไม่สำเร็จ`));
+            document.body.appendChild(script);
+        });
+
+        return loadScript('./asset/js/core.js')
+            .then(() => loadScript('./asset/js/ui.js'))
+            .then(() => loadScript('./asset/js/engine.js'))
+            .then(() => loadScript('./asset/js/main.js'));
+
+    }).then(() => {
+        if (typeof App !== 'undefined') {
+            App.init(); 
+            
+            if (sessionStorage.getItem('skipWelcome') !== 'true') { 
+                const welcomeModal = document.getElementById('welcome-modal'); 
+                if (welcomeModal) { 
+                    welcomeModal.classList.remove('hidden'); 
+                    setTimeout(() => { welcomeModal.classList.remove('opacity-0'); }, 50); 
+                } 
+            } 
+        }
+    }).catch(err => {
+        console.error("เกิดข้อผิดพลาด:", err);
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:rgba(225,29,72,0.9); color:white; padding:15px 30px; border-radius:10px; z-index:9999; font-weight:bold;";
+        errorDiv.innerHTML = `⚠️ <b>Error Loading:</b> ${err.message}<br><span style="font-size:12px; font-weight:normal;">เช็คการตั้งชื่อและ Path ของไฟล์ให้ถูกต้อง</span>`;
+        document.body.appendChild(errorDiv);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<div class="flex flex-col h-full gap-4">
+    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2 mb-2">
+        <span class="text-2xl">🛡️</span> Node Validator
+    </h2>
+    
+    <div id="network-map-container" class="relative w-full h-[380px] sm:h-[410px] flex-shrink-0 bg-[#050B14] border border-slate-800 rounded-xl overflow-hidden shadow-inner">
+        <div class="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-no-repeat opacity-[0.15] invert pointer-events-none" style="background-size: 145% 145%; background-position: center 35%;"></div>
+
+        <div class="absolute top-4 left-4 z-[90] flex items-center gap-2 bg-slate-950/80 px-3 py-1.5 rounded border border-slate-800 backdrop-blur-sm">
+            <div class="w-2.5 h-2.5 rounded-full bg-slate-500" id="net-status-dot"></div>
+            <h3 class="text-slate-300 text-xs font-bold uppercase tracking-wider flex items-center">
+                Global P2P Network
+            </h3>
+        </div>
+
+        <svg viewBox="0 0 100 100" class="absolute inset-0 w-full h-full pointer-events-none z-10" preserveAspectRatio="none">
+            <line id="l-ca-us" class="net-link" x1="22" y1="18" x2="18" y2="30" />
+            <line id="l-us-mx" class="net-link" x1="18" y1="30" x2="14" y2="45" />
+            <line id="l-mx-br" class="net-link" x1="14" y1="45" x2="30" y2="65" />
+            <line id="l-br-ar" class="net-link" x1="30" y1="65" x2="26" y2="82" />
+            <line id="l-uk-fr" class="net-link" x1="44" y1="22" x2="46" y2="34" />
+            <line id="l-uk-de" class="net-link" x1="44" y1="22" x2="52" y2="24" />
+            <line id="l-fr-it" class="net-link" x1="46" y1="34" x2="54" y2="40" />
+            <line id="l-de-it" class="net-link" x1="52" y1="24" x2="54" y2="40" />
+            <line id="l-it-tr" class="net-link" x1="54" y1="40" x2="62" y2="40" />
+            <line id="l-tr-ru" class="net-link" x1="62" y1="40" x2="74" y2="20" />
+            <line id="l-tr-ae" class="net-link" x1="62" y1="40" x2="64" y2="54" />
+            <line id="l-ae-in" class="net-link" x1="64" y1="54" x2="72" y2="50" />
+            <line id="l-ru-cn" class="net-link" x1="74" y1="20" x2="80" y2="36" />
+            <line id="l-in-cn" class="net-link" x1="72" y1="50" x2="80" y2="36" />
+            <line id="l-cn-kr" class="net-link" x1="80" y1="36" x2="88" y2="30" />
+            <line id="l-kr-jp" class="net-link" x1="88" y1="30" x2="94" y2="40" />
+            <line id="l-in-th" class="net-link" x1="72" y1="50" x2="80" y2="62" />
+            <line id="l-th-vn" class="net-link" x1="80" y1="62" x2="86" y2="60" />
+            <line id="l-vn-ph" class="net-link" x1="86" y1="60" x2="92" y2="66" />
+            <line id="l-ph-au" class="net-link" x1="92" y1="66" x2="92" y2="86" />
+            <line id="l-th-my" class="net-link" x1="80" y1="62" x2="78" y2="72" />
+            <line id="l-my-sg" class="net-link" x1="78" y1="72" x2="84" y2="80" />
+            <line id="l-sg-au" class="net-link" x1="84" y1="80" x2="92" y2="86" />
+            <line id="l-me-th" class="net-link" x1="68" y1="68" x2="80" y2="62" />
+            <line id="l-me-my" class="net-link" x1="68" y1="68" x2="78" y2="72" />
+            <line id="l-me-in" class="net-link" x1="68" y1="68" x2="72" y2="50" />
+            <line id="l-me-sat3" class="net-link" x1="68" y1="68" x2="56" y2="60" stroke-dasharray="1.5 1.5" />
+            <line id="l-sat1-sat2" class="net-link" x1="80" y1="8" x2="35" y2="8" stroke-dasharray="2 2" stroke-width="1.5" />
+            <line id="l-jp-sat1" class="net-link" x1="94" y1="40" x2="80" y2="8" stroke-dasharray="1.5 1.5" />
+            <line id="l-ru-sat1" class="net-link" x1="74" y1="20" x2="80" y2="8" stroke-dasharray="1.5 1.5" />
+            <line id="l-sat2-ca" class="net-link" x1="35" y1="8" x2="22" y2="18" stroke-dasharray="1.5 1.5" />
+            <line id="l-sat2-us" class="net-link" x1="35" y1="8" x2="18" y2="30" stroke-dasharray="1.5 1.5" />
+            <line id="l-sat2-uk" class="net-link" x1="35" y1="8" x2="44" y2="22" stroke-dasharray="1.5 1.5" />
+            <line id="l-sat3-it" class="net-link" x1="56" y1="60" x2="54" y2="40" stroke-dasharray="1.5 1.5" />
+            <line id="l-sat3-za" class="net-link" x1="56" y1="60" x2="52" y2="80" stroke-dasharray="1.5 1.5" />
+            <line id="l-sat3-br" class="net-link" x1="56" y1="60" x2="30" y2="65" stroke-dasharray="1.5 1.5" />
+        </svg>
+
+        <div class="absolute inset-0 z-20">
+            <div id="nd-sat1" class="absolute left-[80%] top-[8%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-slate-900 border border-cyan-500/50 rounded flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)] text-sm z-30 transition-all duration-300" title="Asia Satellite">🛰️</div>
+            <div id="nd-sat2" class="absolute left-[35%] top-[8%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-slate-900 border border-cyan-500/50 rounded flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)] text-sm z-30 transition-all duration-300" title="Americas Satellite">🛰️</div>
+            <div id="nd-sat3" class="absolute left-[56%] top-[60%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-slate-900 border border-emerald-500/60 rounded flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)] text-sm z-30 transition-all duration-300" title="Miner Uplink Satellite">🛰️</div>
+            
+            <div id="nd-ca" class="base-node left-[22%] top-[18%]" style="background-image: url('https://flagcdn.com/w40/ca.png');"></div>
+            <div id="nd-us" class="base-node left-[18%] top-[30%]" style="background-image: url('https://flagcdn.com/w40/us.png');"></div>
+            <div id="nd-mx" class="base-node left-[14%] top-[45%]" style="background-image: url('https://flagcdn.com/w40/mx.png');"></div>
+            <div id="nd-br" class="base-node left-[30%] top-[65%]" style="background-image: url('https://flagcdn.com/w40/br.png');"></div>
+            <div id="nd-ar" class="base-node left-[26%] top-[82%]" style="background-image: url('https://flagcdn.com/w40/ar.png');"></div>
+            <div id="nd-uk" class="base-node left-[44%] top-[22%]" style="background-image: url('https://flagcdn.com/w40/gb.png');"></div>
+            <div id="nd-fr" class="base-node left-[46%] top-[34%]" style="background-image: url('https://flagcdn.com/w40/fr.png');"></div>
+            <div id="nd-de" class="base-node left-[52%] top-[24%]" style="background-image: url('https://flagcdn.com/w40/de.png');"></div>
+            <div id="nd-it" class="base-node left-[54%] top-[40%]" style="background-image: url('https://flagcdn.com/w40/it.png');"></div>
+            <div id="nd-za" class="base-node left-[52%] top-[80%]" style="background-image: url('https://flagcdn.com/w40/za.png');"></div>
+            <div id="nd-tr" class="base-node left-[62%] top-[40%]" style="background-image: url('https://flagcdn.com/w40/tr.png');"></div>
+            <div id="nd-ae" class="base-node left-[64%] top-[54%]" style="background-image: url('https://flagcdn.com/w40/ae.png');"></div>
+            <div id="nd-ru" class="base-node left-[74%] top-[20%]" style="background-image: url('https://flagcdn.com/w40/ru.png');"></div>
+            <div id="nd-in" class="base-node left-[72%] top-[50%]" style="background-image: url('https://flagcdn.com/w40/in.png');"></div>
+            <div id="nd-cn" class="base-node left-[80%] top-[36%]" style="background-image: url('https://flagcdn.com/w40/cn.png');"></div>
+            <div id="nd-kr" class="base-node left-[88%] top-[30%]" style="background-image: url('https://flagcdn.com/w40/kr.png');"></div>
+            <div id="nd-jp" class="base-node left-[94%] top-[40%]" style="background-image: url('https://flagcdn.com/w40/jp.png');"></div>
+            <div id="nd-th" class="base-node left-[80%] top-[62%]" style="background-image: url('https://flagcdn.com/w40/th.png');"></div>
+            <div id="nd-vn" class="base-node left-[86%] top-[60%]" style="background-image: url('https://flagcdn.com/w40/vn.png');"></div>
+            <div id="nd-ph" class="base-node left-[92%] top-[66%]" style="background-image: url('https://flagcdn.com/w40/ph.png');"></div>
+            <div id="nd-my" class="base-node left-[78%] top-[72%]" style="background-image: url('https://flagcdn.com/w40/my.png');"></div>
+            <div id="nd-sg" class="base-node left-[84%] top-[80%]" style="background-image: url('https://flagcdn.com/w40/sg.png');"></div>
+            <div id="nd-au" class="base-node left-[92%] top-[86%]" style="background-image: url('https://flagcdn.com/w40/au.png');"></div>
+            
+            <div id="nd-me" class="absolute left-[68%] top-[68%] -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-cyan-600 border-2 border-cyan-400 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(34,211,238,0.5)] text-xl font-bold text-white z-30">👷‍♂️</div>
+        </div>
+    </div>
+
+    <div id="live-node-chat-container" class="hidden lg:flex flex-col w-full flex-grow border border-slate-800 rounded-xl bg-[#050B14] shadow-inner transition-colors duration-300 relative overflow-hidden h-[250px] mt-2">
+        <div class="bg-slate-900 px-4 py-2.5 border-b border-slate-800 flex justify-between items-center z-10 shrink-0">
+            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <span class="text-sm">💬</span> Live Node P2P Gossip
+            </span>
+            <span class="flex h-2 w-2 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+            </span>
+        </div>
+
+        <div id="live-node-chat-box" class="p-4 overflow-y-auto flex-grow font-mono text-[10px] sm:text-[11px] space-y-1.5 text-slate-300">
+            <div class="text-slate-500 italic text-center mt-2">-- System Ready: รอรับข้อมูลจากเครือข่าย --</div>
+        </div>
+    </div>
+</div>
