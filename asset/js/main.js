@@ -43,7 +43,8 @@ window.App = {
             if (STATE.blockTxs.reduce((s, t) => s + t.vb, 0) + STATE.mempoolTxs[idxM].vb > CONFIG.MAX_BLOCK_VB) { UI.showToast("Candidate Block มีขนาด vB ล้นแล้ว!", "error"); return; } 
             STATE.blockTxs.push(STATE.mempoolTxs[idxM]); STATE.mempoolTxs.splice(idxM, 1); 
         } else if (target === 'mempool' && idxB > -1) { 
-            if (STATE.mempoolTxs.length >= 20) { UI.showToast("Mempool เต็มแล้ว (สูงสุด 20 Tx)!", "warning"); return; }
+            // แก้ไขบัค: ขยายขนาดลิมิตตอนคืนธุรกรรมกลับเข้า Mempool เพื่อไม่ให้โดนบล็อก
+            if (STATE.mempoolTxs.length >= 100) { UI.showToast("Mempool เต็มแล้ว!", "warning"); return; }
             STATE.mempoolTxs.push(STATE.blockTxs[idxB]); STATE.blockTxs.splice(idxB, 1); 
         } 
         UI.renderMempool(); 

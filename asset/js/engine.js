@@ -103,7 +103,9 @@ var Engine = {
         
         const latestBlockDiv = document.getElementById('latest-chain-block');
         if (latestBlockDiv) { 
-            latestBlockDiv.onclick = () => { UI.showBlockDetails(STATE.blockchain.length - 1); }; 
+            // แก้ไขบัค: ล็อกลำดับ Index ของกล่อง Latest Block นี้ไว้ ไม่ให้เปลี่ยนตามการเพิ่มบล็อกใหม่
+            const initIdx = STATE.blockchain.length - 1; 
+            latestBlockDiv.onclick = () => { UI.showBlockDetails(initIdx); }; 
             let timeSpan = latestBlockDiv.querySelector('.time-ago');
             if (!timeSpan) {
                 timeSpan = document.createElement('span');
@@ -165,7 +167,7 @@ var Engine = {
         const botId = miningBots[Math.floor(Math.random() * miningBots.length)];
         const botName = `Node ${botId.toUpperCase()}`;
 
-        const isMalicious = Math.random() < 0.30; 
+        const isMalicious = Math.random() < 0.10; 
         const maliciousTypes = ['oversize', 'badtime', 'doublespend', 'badsig', 'overclaim'];
         const mType = isMalicious ? maliciousTypes[Math.floor(Math.random() * maliciousTypes.length)] : null;
 
@@ -448,7 +450,6 @@ var Engine = {
                     const content = document.getElementById('hash-modal-content');
                     if (content && content.classList.contains('hash-minimized')) { UI.minimizeMining(); }
 
-                    // เพิ่มดีไซน์ฉลองแบบเด่นๆ ตอนขุดเจอ
                     if(outModal) { 
                         outModal.innerHTML += `<div class="text-emerald-400 mt-4 text-sm bg-emerald-950/60 p-4 rounded-lg border border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)] mb-2 relative overflow-hidden">
                             <div class="absolute inset-0 bg-emerald-500/20 animate-pulse"></div>
@@ -538,7 +539,6 @@ var Engine = {
             UI.writeLog("ตรวจสอบเสร็จสิ้น: ข้อมูลถูกต้องตามกฎ Consensus ทำการบันทึกลงสู่ Blockchain", "final-success"); 
             AudioEngine.sfxFinalSuccess();
             
-            // ===== จุดพลุและแจ้งเตือนสีเขียวตอนขุดสำเร็จ! =====
             if (typeof UI.shootFireworks === 'function') {
                 UI.shootFireworks();
             }

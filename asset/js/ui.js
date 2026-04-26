@@ -380,9 +380,15 @@ var UI = {
         resDiv.classList.add('animate-pulse');
         resDiv.classList.remove('hidden');
 
-        if (data.currentHeight === 0 || data.claimedPrev.includes("00000000000000000000000000000000")) { resText.innerHTML = `<span class="text-amber-400">ℹ️ นี่คือ <b>Genesis Block</b> จึงไม่มีบล็อกก่อนหน้า ค่า Prev Hash จึงเป็นศูนย์เพื่อเริ่มสายโซ่</span>`; } 
-        else if (data.claimedPrev === data.actualPrev) { resText.innerHTML = `<span class="text-emerald-400">✅ <b>ตรวจสอบสำเร็จ:</b> Prev Hash ตรงกับ Hash จริงของบล็อก #${data.currentHeight - 1} เป๊ะ! ข้อมูลเชื่อมโยงกันอย่างสมบูรณ์</span>`; } 
-        else { resText.innerHTML = `<span class="text-rose-400">❌ <b>ล้มเหลว:</b> ข้อมูลไม่ตรงกัน! สายโซ่ขาดออกจากกัน บล็อกนี้อาจถูกปลอมแปลง</span>`; }
+        if (data.currentHeight === 0 || data.claimedPrev.includes("00000000000000000000000000000000")) { 
+            resText.innerHTML = `<span class="text-amber-400">ℹ️ นี่คือ <b>Genesis Block</b> จึงไม่มีบล็อกก่อนหน้า ค่า Prev Hash จึงเป็นศูนย์เพื่อเริ่มสายโซ่</span>`; 
+        } 
+        else if (data.claimedPrev === data.actualPrev) { 
+            resText.innerHTML = `<span class="text-emerald-400">✅ <b>ตรวจสอบสำเร็จ:</b> Prev Hash ตรงกับ Hash จริงของบล็อก #${data.currentHeight - 1} เป๊ะ! ข้อมูลเชื่อมโยงกันอย่างสมบูรณ์<br><span class="text-[10px] text-emerald-200/80 mt-1 block break-all">Hash ของบล็อก #${data.currentHeight - 1} คือ: ${data.actualPrev}</span></span>`; 
+        } 
+        else { 
+            resText.innerHTML = `<span class="text-rose-400">❌ <b>ล้มเหลว:</b> ข้อมูลไม่ตรงกัน! สายโซ่ขาดออกจากกัน บล็อกนี้อาจถูกปลอมแปลง<br><span class="text-[10px] text-rose-200/80 mt-1 block break-all">Hash จริงคือ: ${data.actualPrev}</span></span>`; 
+        }
     },
     writeLog(msg, type = 'info') {
         const logBox = document.getElementById('event-log'); if(!logBox) return; 
