@@ -36,6 +36,7 @@ window.App = {
     abortMining: () => Engine.abortMining(), 
     minimizeMining: () => UI.minimizeMining(), 
     moveTx: (id, target) => { 
+        window.currentTemplateTier = null; // รีเซ็ตการล็อกปุ่ม หากมีการคลิกย้ายด้วยตัวเอง
         const idxM = STATE.mempoolTxs.findIndex(t => t.id === id); 
         const idxB = STATE.blockTxs.findIndex(t => t.id === id); 
         if (target === 'block' && idxM > -1) { 
@@ -43,20 +44,104 @@ window.App = {
             if (STATE.blockTxs.reduce((s, t) => s + t.vb, 0) + STATE.mempoolTxs[idxM].vb > CONFIG.MAX_BLOCK_VB) { UI.showToast("Candidate Block มีขนาด vB ล้นแล้ว!", "error"); return; } 
             STATE.blockTxs.push(STATE.mempoolTxs[idxM]); STATE.mempoolTxs.splice(idxM, 1); 
         } else if (target === 'mempool' && idxB > -1) { 
-            // แก้ไขบัค: ขยายขนาดลิมิตตอนคืนธุรกรรมกลับเข้า Mempool เพื่อไม่ให้โดนบล็อก
             if (STATE.mempoolTxs.length >= 100) { UI.showToast("Mempool เต็มแล้ว!", "warning"); return; }
             STATE.mempoolTxs.push(STATE.blockTxs[idxB]); STATE.blockTxs.splice(idxB, 1); 
         } 
         UI.renderMempool(); 
     },
+    autoFillFromMempool: () => {
+        // หาก Candidate Block ว่างเปล่า ให้เคลียร์สถานะเดิมทิ้งก่อน
+        if (STATE.blockTxs.length === 0) {
+            window.currentTemplateTier = null;
+        }
+
+        // ห้ามกดซ้ำบล็อกเดิม
+        if (window.currentTemplateTier === 'auto') {
+            UI.showToast("คุณกำลังใช้โหมดดึงอัตโนมัติอยู่แล้ว!", "warning");
+            return;
+        }
+
+        // คืนธุรกรรมของจริง (ที่มาจาก Mempool) กลับลงไปก่อนที่จะเคลียร์
+        STATE.blockTxs.filter(tx => !tx.isMock).forEach(tx => {
+            if (!STATE.mempoolTxs.find(m => m.id === tx.id)) {
+                STATE.mempoolTxs.push(tx);
+            }
+        });
+        
+        STATE.blockTxs = [];
+        window.currentTemplateTier = 'auto';
+
+        // 1. เรียงลำดับ Mempool ตาม satPerVb จากมากไปน้อย (Top Fee)
+        STATE.mempoolTxs.sort((a, b) => b.satPerVb - a.satPerVb);
+
+        let currentVb = 0;
+        const txsToMove = [];
+        
+        // 2. เลือกธุรกรรมเข้าบล็อกโดยไม่ให้เกินน้ำหนักสูงสุด
+        for (let i = 0; i < STATE.mempoolTxs.length; i++) {
+            let tx = STATE.mempoolTxs[i];
+            if (currentVb + tx.vb <= CONFIG.MAX_BLOCK_VB && txsToMove.length < 20) {
+                txsToMove.push(tx);
+                currentVb += tx.vb;
+            }
+        }
+
+        // 3. นำธุรกรรมที่เลือกออกจาก Mempool แล้วใส่ Candidate Block
+        txsToMove.forEach(tx => {
+            const idx = STATE.mempoolTxs.findIndex(m => m.id === tx.id);
+            if (idx > -1) STATE.mempoolTxs.splice(idx, 1);
+            STATE.blockTxs.push(tx);
+        });
+
+        UI.renderMempool();
+        UI.showToast("ดึงธุรกรรมจริงที่ให้ Fee สูงสุดเข้าบล็อกสำเร็จ!", "success");
+    },
     loadMempoolTemplate: (tier) => { 
-        STATE.mempoolTxs.sort((a,b) => b.satPerVb - a.satPerVb); 
-        const count = tier === 'high' ? 6 : 3; 
-        for(let i=0; i<count; i++) { 
-            if(STATE.mempoolTxs.length && STATE.blockTxs.length < 20) { 
-                window.App.moveTx(STATE.mempoolTxs[0].id, 'block'); 
-            } 
-        } 
+        if (STATE.blockTxs.length === 0) {
+            window.currentTemplateTier = null;
+        }
+
+        if (window.currentTemplateTier === tier) {
+            UI.showToast("คุณกำลังใช้ชุดข้อมูลนี้อยู่แล้ว!", "warning");
+            return;
+        }
+
+        // คืนธุรกรรมของจริง (ที่มาจาก Mempool) กลับลงไปก่อน
+        STATE.blockTxs.filter(tx => !tx.isMock).forEach(tx => {
+            if (!STATE.mempoolTxs.find(m => m.id === tx.id)) {
+                STATE.mempoolTxs.push(tx);
+            }
+        });
+        
+        window.currentTemplateTier = tier;
+        STATE.blockTxs = [];
+
+        let targetSat = 45;
+        if (tier === 'med') targetSat = 15;
+        if (tier === 'low') targetSat = 9;
+
+        let currentVb = 0;
+        const newTxs = [];
+        const types = ['P2PKH', 'SegWit', 'Taproot', 'Lightning', 'Batch Tx'];
+
+        while (currentVb < CONFIG.MAX_BLOCK_VB && newTxs.length < 20) {
+            const id = Math.random().toString(16).substring(2, 6).padEnd(4, '0');
+            const vb = Math.floor(Math.random() * 200) + 150; 
+            if (currentVb + vb > CONFIG.MAX_BLOCK_VB) break;
+
+            const satVariance = Math.floor(Math.random() * 3) - 1;
+            const finalSat = Math.max(1, targetSat + satVariance);
+            const fee = Math.floor(vb * finalSat);
+
+            // เพิ่ม property isMock เพื่อให้รู้ว่าเป็นข้อมูลจำลอง จะได้ไม่โดนคืนลง Mempool จริง
+            newTxs.push({ id, type: types[Math.floor(Math.random()*types.length)], fee, vb, satPerVb: finalSat, isMock: true });
+            currentVb += vb;
+        }
+
+        STATE.blockTxs = newTxs;
+        
+        UI.renderMempool(); 
+        UI.showToast(`ดึงชุดข้อมูล ${tier.toUpperCase()} Fee เข้าสู่บล็อกสำเร็จ!`, "success");
     },
     mineBlock: () => Engine.mine(), 
     resetSim: () => location.reload(),

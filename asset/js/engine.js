@@ -1,7 +1,7 @@
 var Mempool = {
     generate(count = 8) { const types = ['P2PKH', 'SegWit', 'Taproot', 'Lightning', 'Batch Tx', 'Consolidation', 'Spam']; const txs = []; for(let i=0; i<count; i++) { const id = Math.random().toString(16).substring(2, 6); const vb = Math.floor(Math.random() * 400) + 150; const sat = Math.floor(Math.random() * 80) + 5; txs.push({ id: id.padEnd(4, '0'), type: types[Math.floor(Math.random()*types.length)], fee: Math.floor(vb*sat), vb, satPerVb: sat }); } return txs.sort((a,b) => b.satPerVb - a.satPerVb); },
     init() { 
-        STATE.mempoolTxs = this.generate(25); // เตรียมธุรกรรมไว้ 25 อัน
+        STATE.mempoolTxs = this.generate(25); // เตรียมธุรกรรมไว้ 25 อันเฉพาะตอนเริ่มเว็บ
         STATE.blockTxs = []; 
         UI.renderMempool(); 
         this.startTxStream(); 
@@ -19,15 +19,8 @@ var Mempool = {
         }, 4000); 
     },
     replenish() { 
-        if (STATE.mempoolTxs.length < 15) { // ถ้าน้อยกว่า 15 ให้เติมเพิ่ม
-            const needed = 25 - STATE.mempoolTxs.length;
-            if (needed > 0) {
-                STATE.mempoolTxs.push(...this.generate(needed)); 
-                STATE.mempoolTxs.sort((a,b) => b.satPerVb - a.satPerVb); 
-                UI.renderMempool(); 
-                UI.addLiveNodeLog(`📦 เครือข่ายโยนธุรกรรมเข้า Mempool เพิ่มแล้ว`, 'system'); 
-            }
-        } 
+        // ยกเลิกการเติมธุรกรรมอัตโนมัติแบบทีเดียวเต็ม 
+        // ปล่อยให้เป็นหน้าที่ของ txStreamInterval ด้านบน ค่อยๆ ทยอยประกาศผ่าน P2P Gossip เท่านั้น
     }
 };
 
@@ -103,7 +96,6 @@ var Engine = {
         
         const latestBlockDiv = document.getElementById('latest-chain-block');
         if (latestBlockDiv) { 
-            // แก้ไขบัค: ล็อกลำดับ Index ของกล่อง Latest Block นี้ไว้ ไม่ให้เปลี่ยนตามการเพิ่มบล็อกใหม่
             const initIdx = STATE.blockchain.length - 1; 
             latestBlockDiv.onclick = () => { UI.showBlockDetails(initIdx); }; 
             let timeSpan = latestBlockDiv.querySelector('.time-ago');
@@ -117,7 +109,9 @@ var Engine = {
         }
         
         UI.setHashDisplay('ui-prev-hash', STATE.prevHash); 
-        this.prepareNext();
+        
+        // ให้ isStartup เป็น true เฉพาะตอนเริ่มเว็บครั้งแรกสุด เพื่อเรียก Mempool.init()
+        this.prepareNext(true);
     },
     toggleBotMode() {
         AudioEngine.init(); 
@@ -177,6 +171,7 @@ var Engine = {
         const btnMine = document.getElementById('btn-mine');
         if (btnMine && document.getElementById('hash-modal') && !document.getElementById('hash-modal').classList.contains('opacity-0')) {
             btnMine.disabled = true; btnMine.innerText = "⏳ เครือข่ายกำลังอัปเดต...";
+            btnMine.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
         }
 
         let userAffected = false;
@@ -216,11 +211,12 @@ var Engine = {
             wave.nodes.forEach(n => { 
                 let msg = isMalicious ? getRandomChat('reject') : getRandomChat('accept');
                 const el = document.getElementById(n); 
-                if(el && n !== 'nd-me') { el.classList.remove('anim-node-verifying'); el.classList.add('anim-node-success'); } 
+                // แก้อนิเมชันสีให้ถูกต้องเมื่อบอทโดนเครือข่ายแบน
+                if(el && n !== 'nd-me') { el.classList.remove('anim-node-verifying'); el.classList.add(isMalicious ? 'anim-node-fail' : 'anim-node-success'); } 
                 UI.showNodeChat(n, isMalicious ? "🛡️ REJECT" : "✅ OK", isMalicious ? "text-amber-400 border-amber-500/50" : "text-emerald-400 border-emerald-500/50"); 
                 if(n !== 'nd-me') {
                     if (isMalicious) { UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} ปฏิเสธบล็อกและแบนโหนด ${botId.toUpperCase()}: "${msg}"`, 'reject'); } 
-                    else { UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()}: "${msg}"`, 'accept'); }
+                    else { UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} ตรวจสอบผ่านและยอมรับบล็อกของบอท: "${msg}"`, 'accept'); }
                 }
             });
             
@@ -273,6 +269,7 @@ var Engine = {
                     UI.toggleNodeMining('me', true);
                     if (btnMine && document.getElementById('hash-modal') && document.getElementById('hash-modal').classList.contains('opacity-0')) {
                         btnMine.disabled = true; btnMine.innerText = "กำลังประมวลผล PoW...";
+                        btnMine.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
                     }
                 }
             }, 500);
@@ -325,19 +322,21 @@ var Engine = {
                 setTimeout(() => {
                     this.abortMining();
                     const btnMine = document.getElementById('btn-mine');
-                    if (btnMine) { btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุดใหม่ (Stale Block)"; }
+                    if (btnMine) { btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุดใหม่ (Stale Block)"; btnMine.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none'); }
                 }, 2500);
 
             } else if (userAffected) {
                 UI.showToast("🤖 เครือข่ายอัปเดตบล็อกใหม่! ข้อมูลที่คุณเตรียมขุดล้าสมัยแล้ว โปรดเริ่มขุดใหม่", "error");
                 if (btnMine && document.getElementById('hash-modal') && document.getElementById('hash-modal').classList.contains('opacity-0')) { 
                     btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุดใหม่ (Stale Block)"; 
+                    btnMine.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
                 }
                 STATE.minedHash = ""; 
             } else {
                 UI.showToast(`🤖 บอท ${botName} ขุด Block #${STATE.liveHeight} สำเร็จ! ต้องอัปเดต PrevHash ใหม่`, "warning");
                 if (btnMine && document.getElementById('hash-modal') && document.getElementById('hash-modal').classList.contains('opacity-0')) { 
                     btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุด (PoW)"; 
+                    btnMine.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
                 }
             }
 
@@ -348,7 +347,9 @@ var Engine = {
                 if(document.getElementById('cb-bot-mode') && document.getElementById('cb-bot-mode').checked) this.startBotsMining();
             }, 500);
 
-            this.evaluateDifficulty(); Mempool.replenish(); UI.renderMempool();
+            // บอทขุดเสร็จ ให้อัปเดต UI โดยไม่เรียกเติม Mempool อัตโนมัติแล้ว
+            this.evaluateDifficulty(); 
+            UI.renderMempool();
         }
     },
     abortMining() {
@@ -360,15 +361,16 @@ var Engine = {
         const btnMine = document.getElementById('btn-mine');
         
         if (STATE.prevHash !== document.getElementById('ui-prev-hash').getAttribute('data-full')) {
-            if (btnMine) { btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุดใหม่ (Stale Block)"; }
+            if (btnMine) { btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุดใหม่ (Stale Block)"; btnMine.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none'); }
         } else {
-            if (btnMine) { btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุด (PoW)"; }
+            if (btnMine) { btnMine.disabled = false; btnMine.innerText = "⛏️ เริ่มขุด (PoW)"; btnMine.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none'); }
         }
         
         UI.addLiveNodeLog(`🛑 คุณหยุดการขุดบล็อกปัจจุบัน`, 'system');
     },
     mine() {
         if (STATE.bannedNodes.has('me')) { UI.showToast("☠️ โหนดของคุณถูกแบนถาวร! โปรดกด 'เริ่มรอบใหม่'", "error"); return; }
+        if (STATE.isMining) return; // ป้องกันการกดซ้ำเมื่อเริ่มขุดไปแล้ว
         
         STATE.isMining = true;
         UI.toggleNodeMining('me', true); 
@@ -381,7 +383,11 @@ var Engine = {
         const mockBits = `0x170${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0')}`;
         STATE.minedBits = `${mockBits} (Target ${diff} Zeros)`; 
         
-        if(btn) { btn.disabled = true; btn.innerText = "กำลังประมวลผล PoW..."; }
+        if(btn) { 
+            btn.disabled = true; 
+            btn.innerText = "กำลังประมวลผล PoW..."; 
+            btn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none'); // ล็อกปุ่ม 100% ป้องกันการคลิกซ้ำ
+        }
         window.App.toggleModal('hash-modal', true);
         
         if(outModal) { 
@@ -463,7 +469,7 @@ var Engine = {
                     if(termModal) termModal.scrollTop = termModal.scrollHeight; AudioEngine.sfxFound(); 
                     
                     setTimeout(() => { 
-                        if(btn) { btn.disabled = false; btn.innerText = "⛏️ เริ่มขุด (PoW)"; } 
+                        if(btn) { btn.innerText = "กำลังอัปเดตเครือข่าย..."; } 
                         window.App.toggleModal('hash-modal', false);
                         this.broadcast();
                     }, 1200); 
@@ -510,10 +516,12 @@ var Engine = {
             await Utils.sleep(500);
             
             wave.nodes.forEach(n => { 
-                const el = document.getElementById(n); if(el) { el.classList.remove('anim-node-verifying'); el.classList.add(isInvalid ? 'anim-node-success' : 'anim-node-success'); } 
+                const el = document.getElementById(n); if(el) { el.classList.remove('anim-node-verifying'); el.classList.add(isInvalid ? 'anim-node-fail' : 'anim-node-success'); } 
                 let msg = isInvalid ? getRandomChat('reject') : getRandomChat('accept');
                 UI.showNodeChat(n, isInvalid ? "🛡️ REJECT" : "✅ ACCEPTED", isInvalid ? "text-amber-400 border-amber-500/50" : "text-emerald-400 border-emerald-500/50"); 
-                UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} ปฏิเสธบล็อกและแบนโหนดคุณ: "${msg}"`, isInvalid ? "reject" : "accept");
+                // แก้ไขข้อความในส่วนของ Live Node Gossip ให้แสดงผลถูกต้อง
+                const logAction = isInvalid ? "ปฏิเสธบล็อกและแบนโหนดคุณ" : "ตรวจสอบผ่านและยอมรับบล็อกของคุณ";
+                UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} ${logAction}: "${msg}"`, isInvalid ? "reject" : "accept");
             });
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-transmit'); el.classList.add(isInvalid ? 'anim-line-fail' : 'anim-line-flow'); } });
             
@@ -566,11 +574,29 @@ var Engine = {
             if(document.getElementById('cb-bot-mode') && document.getElementById('cb-bot-mode').checked) this.startBotsMining();
         }, 500); 
 
-        setTimeout(() => this.prepareNext(), 1000);
+        // ไม่เรียก Mempool.init() แล้ว เพื่อให้การเติมธุรกรรมไหลมาตาม Gossip เท่านั้น (ส่งค่า false เป็นสัญญาณบอกว่าไม่ใช่ตอนโหลดเว็บครั้งแรก)
+        setTimeout(() => this.prepareNext(false), 1000);
     },
-    prepareNext() {
-        UI.setHashDisplay('ui-prev-hash', STATE.prevHash); STATE.blockTxs = []; STATE.minedHash = ""; STATE.minedNonce = 0; Mempool.init(); 
-        const btnMine = document.getElementById('btn-mine'); if(btnMine && !STATE.bannedNodes.has('me')) { btnMine.disabled = false; btnMine.innerText = `⛏️ เริ่มขุด (PoW)`; }
+    prepareNext(isStartup = false) {
+        UI.setHashDisplay('ui-prev-hash', STATE.prevHash); 
+        STATE.blockTxs = []; 
+        STATE.minedHash = ""; 
+        STATE.minedNonce = 0; 
+        
+        // ถ้าเป็นการโหลดเว็บครั้งแรก ให้สุ่มใส่ให้เต็ม 25 อัน แต่ถ้าเพิ่งขุดเสร็จ แค่ล้างกล่อง Candidate แล้วให้สตรีมทำงานต่อ
+        if (isStartup) { 
+            Mempool.init(); 
+        } else { 
+            UI.renderMempool(); 
+        }
+        
+        const btnMine = document.getElementById('btn-mine'); 
+        if(btnMine && !STATE.bannedNodes.has('me')) { 
+            btnMine.disabled = false; 
+            btnMine.innerText = `⛏️ เริ่มขุด (PoW)`; 
+            btnMine.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none'); 
+        }
+        
         const term = document.getElementById('hash-terminal'); if(term) term.classList.add('hidden');
         document.getElementById('live-node-chat-box').innerHTML = '<div class="text-slate-500 italic text-center mt-2">-- System Ready: รอรับข้อมูลจากเครือข่าย --</div>';
         const statusDot = document.getElementById('net-status-dot'); if (statusDot) { statusDot.classList.replace('bg-emerald-500', 'bg-slate-500'); statusDot.classList.replace('bg-rose-500', 'bg-slate-500'); }
