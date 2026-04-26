@@ -7,19 +7,25 @@
     
     <div class="flex items-center w-full pb-2 relative overflow-visible">
         <div class="flex-1 w-0 flex justify-end gap-2 sm:gap-3 pr-4 sm:pr-8">
+            <div class="block-cube" style="background: linear-gradient(180deg, #4c1d95 0%, #1e1b4b 100%); border: 1px solid #7c3aed;" onclick="App.autoFillFromMempool()">
+                <span class="text-fuchsia-400 font-bold text-sm">Auto Fill</span>
+                <span class="text-white font-bold text-base mt-1">Top Fee</span>
+                <span class="text-[10px] text-slate-300 mt-2 truncate w-full">ดึงจาก Mempool จริง</span>
+            </div>
+
             <div class="block-cube mempool-high" onclick="App.loadMempoolTemplate('high')">
                 <span class="text-amber-400 font-bold text-sm">~45 sat/vB</span>
-                <span class="text-white font-bold text-base mt-1">1.82 MB</span>
+                <span class="text-white font-bold text-base mt-1">~180,000 sats</span>
                 <span class="text-xs text-slate-300 mt-2 truncate w-full">คลิกเพื่อดึงข้อมูล</span>
             </div>
             <div class="block-cube mempool-med" onclick="App.loadMempoolTemplate('med')">
                 <span class="text-emerald-300 font-bold text-sm">~15 sat/vB</span>
-                <span class="text-white font-bold text-base mt-1">1.40 MB</span>
+                <span class="text-white font-bold text-base mt-1">~60,000 sats</span>
                 <span class="text-xs text-slate-300 mt-2 truncate w-full">คลิกเพื่อดึงข้อมูล</span>
             </div>
             <div class="block-cube mempool-low" onclick="App.loadMempoolTemplate('low')">
                 <span class="text-emerald-400 font-bold text-sm">~9 sat/vB</span>
-                <span class="text-white font-bold text-base mt-1">1.25 MB</span>
+                <span class="text-white font-bold text-base mt-1">~36,000 sats</span>
                 <span class="text-xs text-slate-300 mt-2 truncate w-full">คลิกเพื่อดึงข้อมูล</span>
             </div>
         </div>
