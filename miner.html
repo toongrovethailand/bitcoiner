@@ -40,52 +40,63 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 shrink-0">
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-inner hover:border-cyan-500/30 transition-colors relative overflow-hidden w-full">
-            <div id="bot-mode-bg" class="absolute inset-0 bg-gradient-to-r from-cyan-900/20 to-blue-900/20 opacity-0 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
-            <p class="text-sm text-slate-300 font-bold flex items-center relative z-10 m-0 shrink-0">2. จำลองความยาก</p>
-            <div class="space-y-2 relative z-10 w-full shrink-0">
-                <div class="flex items-center justify-between bg-slate-950 rounded border border-slate-700 px-3 py-1.5 h-[38px]">
-                    <span class="text-xs text-slate-500 font-medium shrink-0">Target:</span>
-                    <input type="number" id="input-difficulty" value="3" min="1" max="19" class="bg-transparent w-full flex-1 min-w-0 ml-2 text-cyan-400 text-right font-bold font-mono text-sm focus:outline-none appearance-none">
-                </div>
-                <div class="flex items-center justify-between bg-slate-950/80 rounded border border-slate-700/80 px-3 py-1.5 h-[38px] group hover:border-cyan-500/50 transition-colors">
-                    <span class="text-xs text-slate-500 font-medium group-hover:text-cyan-400 transition-colors flex items-center gap-1.5 shrink-0">
-                        <span>🤖</span> ฟาร์มบอทแข่งขุด
-                    </span>
-                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                      <input type="checkbox" id="cb-bot-mode" onchange="App.toggleBotMode()" class="sr-only peer">
-                      <div class="w-9 h-5 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-gray-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500 border border-slate-600 shadow-inner"></div>
-                    </label>
+    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-inner relative overflow-hidden w-full mt-2 shrink-0">
+        <div id="bot-mode-bg" class="absolute inset-0 bg-gradient-to-r from-cyan-900/20 to-blue-900/20 opacity-0 transition-opacity duration-500 pointer-events-none rounded-xl"></div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 relative z-10 w-full items-end">
+            <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold truncate">2. ความยาก (Target)</label>
+                <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
+                    <input type="number" id="input-difficulty" value="3" min="1" max="19" class="bg-transparent w-full text-cyan-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
                 </div>
             </div>
-        </div>
-
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-inner hover:border-emerald-500/30 transition-colors w-full">
-            <p class="text-sm text-slate-300 font-bold flex items-center m-0 shrink-0">3. เคลมรายได้ (sats)</p>
-            <div class="space-y-2 w-full shrink-0">
-                <div class="flex items-center justify-between bg-slate-950 rounded border border-slate-700 px-3 py-1.5 h-[38px]">
-                    <span class="text-xs text-emerald-500 font-medium shrink-0">Sub:</span>
-                    <input type="number" id="input-subsidy" value="312500000" step="1" class="bg-transparent w-full flex-1 min-w-0 ml-2 text-emerald-400 text-right font-bold font-mono text-sm focus:outline-none appearance-none">
+            
+            <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold flex items-center gap-1 truncate">3. กลยุทธ์ Nonce</label>
+                <div class="relative w-full h-[38px]">
+                    <select id="nonce-strategy-selector" class="w-full h-full bg-slate-950 border border-slate-700 text-emerald-400 hover:border-emerald-500/60 text-[11px] sm:text-xs font-bold font-mono rounded px-2 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer shadow-inner transition-colors" onchange="STATE.nodeNonceStrategies['me'] = this.value">
+                        <option value="linear">1. Sequential</option>
+                        <option value="random">2. Stochastic</option>
+                        <option value="asic">3. ASIC Boost</option>
+                        <option value="reverse">4. Decrement</option>
+                        <option value="evens">5. Evens Only</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-emerald-500/70">▼</div>
                 </div>
-                <div class="flex items-center justify-between bg-slate-950 rounded border border-slate-700 px-3 py-1.5 h-[38px]">
-                    <span class="text-xs text-amber-500 font-medium shrink-0">Fee:</span>
-                    <input type="number" id="input-fee" value="0" step="1" class="bg-transparent w-full flex-1 min-w-0 ml-2 text-amber-400 text-right font-bold font-mono text-sm focus:outline-none appearance-none">
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold truncate">4. เคลมรายได้ (Subsidy)</label>
+                <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
+                    <input type="number" id="input-subsidy" value="312500000" step="1" class="bg-transparent w-full text-emerald-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold truncate">5. ค่าธรรมเนียม (Fee)</label>
+                <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
+                    <input type="number" id="input-fee" value="0" step="1" class="bg-transparent w-full text-amber-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-rose-950/20 border border-rose-900/40 rounded-xl p-5 shadow-inner relative mt-2 shrink-0">
+    <div class="bg-rose-950/20 border border-rose-900/40 rounded-xl p-4 shadow-inner relative mt-2 shrink-0 transition-all duration-300">
         <div class="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <p class="mb-4 text-sm text-rose-400 font-bold tracking-wider flex items-center gap-2">
-            <span class="animate-pulse">⚠️</span> ทดสอบแหกกฎ Consensus 
-        </p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm relative z-10">
-            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-oversize" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">ล้นบล็อก (>4M WU)</span></label>
-            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-badtime" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">ปลอมเวลาอนาคต</span></label>
-            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-doublespend" onchange="App.triggerDoubleSpendRipple()" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">จ่ายซ้ำซ้อน (Double Spend)</span></label>
-            <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-badsig" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">ลายเซ็นปลอม (Bad Sig)</span></label>
+        <div class="flex justify-between items-center cursor-pointer select-none relative z-10" onclick="document.getElementById('consensus-rules-body').classList.toggle('hidden'); this.querySelector('.chevron').innerText = document.getElementById('consensus-rules-body').classList.contains('hidden') ? '▼' : '▲';">
+            <p class="text-sm text-rose-400 font-bold tracking-wider flex items-center gap-2 m-0">
+                <span class="animate-pulse">⚠️</span> ทดสอบแหกกฎ Consensus 
+            </p>
+            <span class="chevron text-rose-400 text-xs font-bold transition-transform">▼</span>
+        </div>
+        
+        <div id="consensus-rules-body" class="hidden mt-4 pt-4 border-t border-rose-900/30">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm relative z-10">
+                <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-oversize" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">ล้นบล็อก (>4M WU)</span></label>
+                <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-badtime" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">ปลอมเวลาอนาคต</span></label>
+                <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-doublespend" onchange="App.triggerDoubleSpendRipple()" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">จ่ายซ้ำซ้อน (Double Spend)</span></label>
+                <label class="flex items-center space-x-3 cursor-pointer group"><input type="checkbox" id="cb-badsig" class="accent-rose-500 w-4 h-4"><span class="text-slate-300 group-hover:text-white transition-colors">ลายเซ็นปลอม (Bad Sig)</span></label>
+            </div>
         </div>
     </div>
 
