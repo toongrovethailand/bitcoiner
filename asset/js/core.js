@@ -40,24 +40,93 @@ var STATE = {
     miningReq: null, timerInterval: null, merkleTreeData: null,
     botInterval: null, botStartTimers: [], txStreamInterval: null,
     isBroadcasting: false, isMining: false, 
-    lastBlockTimeMs: Date.now(), bannedNodes: new Set() 
+    lastBlockTimeMs: Date.now(), bannedNodes: new Set(),
+    nodeHashOffsets: {} // ตัวแปรสำหรับเก็บค่าเปอร์เซ็นต์กำลังขุดที่เหลื่อมกัน
 };
 
 var AudioEngine = {
     ctx: null,
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
-    play(freq, type, duration, vol = 0.1) { if (!this.ctx) return; const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime); gain.gain.setValueAtTime(vol, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + duration); },
-    sfxTick() { this.play(1200, 'square', 0.03, 0.015); }, 
-    sfxFound() { this.play(880, 'sine', 0.1, 0.1); setTimeout(() => this.play(1760, 'sine', 0.3, 0.1), 100); }, 
-    sfxFail() { this.play(150, 'sawtooth', 0.3, 0.1); }, 
-    sfxFinalSuccess() { [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => { setTimeout(() => this.play(f, 'square', 0.2, 0.1), i * 100); }); }, 
-    sfxFinalReject() { this.play(100, 'sawtooth', 0.5, 0.15); setTimeout(() => this.play(80, 'sawtooth', 0.8, 0.15), 300); },
-    sfxBotMine() { this.play(400, 'triangle', 0.2, 0.15); setTimeout(() => this.play(300, 'sawtooth', 0.3, 0.15), 200); }
+    play(freq, type, duration, vol = 0.1, slideFreq = null) { 
+        if (!this.ctx) return; 
+        const osc = this.ctx.createOscillator(); 
+        const gain = this.ctx.createGain(); 
+        osc.type = type; 
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime); 
+        
+        if (slideFreq) {
+            osc.frequency.exponentialRampToValueAtTime(slideFreq, this.ctx.currentTime + duration);
+        }
+        
+        gain.gain.setValueAtTime(0.001, this.ctx.currentTime); 
+        gain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 0.02); 
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration); 
+        
+        osc.connect(gain); 
+        gain.connect(this.ctx.destination); 
+        osc.start(); 
+        osc.stop(this.ctx.currentTime + duration); 
+    },
+    sfxTick() { 
+        this.play(1200, 'square', 0.06, 0.02, 800); 
+    }, 
+    sfxFound() { 
+        this.play(523.25, 'sine', 0.15, 0.1); 
+        setTimeout(() => this.play(659.25, 'sine', 0.15, 0.1), 100); 
+        setTimeout(() => this.play(783.99, 'sine', 0.3, 0.1), 200); 
+    }, 
+    sfxFail() { 
+        this.play(200, 'sawtooth', 0.4, 0.1, 50); 
+    }, 
+    sfxFinalSuccess() { 
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => { 
+            setTimeout(() => this.play(f, 'sine', 0.4, 0.15), i * 120); 
+        }); 
+        setTimeout(() => {
+            this.play(523.25, 'triangle', 0.8, 0.1);
+            this.play(659.25, 'triangle', 0.8, 0.1);
+            this.play(1046.50, 'triangle', 0.8, 0.1);
+        }, 480);
+    }, 
+    sfxFinalReject() { 
+        this.play(150, 'sawtooth', 0.4, 0.15, 80); 
+        setTimeout(() => this.play(90, 'sawtooth', 0.6, 0.2, 40), 250); 
+    },
+    sfxBotMine() { 
+        this.play(600, 'square', 0.1, 0.08, 1200); 
+        setTimeout(() => this.play(1200, 'square', 0.1, 0.08, 600), 100); 
+        setTimeout(() => this.play(400, 'sawtooth', 0.25, 0.1, 200), 200); 
+    }
 };
 
 var Utils = {
     sleep: ms => new Promise(r => setTimeout(r, ms)),
     generateHash: (prefix = "") => { let hash = prefix; while(hash.length < 64) hash += Math.random().toString(16).substring(2); return hash.substring(0, 64); },
+    
+    sha256: function(ascii) {
+        function rightRotate(value, amount) { return (value>>>amount) | (value<<(32 - amount)); };
+        var mathPow = Math.pow; var maxWord = mathPow(2, 32); var result = ''; var words = []; var asciiBitLength = ascii.length*8;
+        var hash = [1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225];
+        var k = [1116352408, 1899447441, 3049323471, 3921009573, 965070248, 237438962, 725511199, 76029189, 275056812, 206723606, 462214370, 462908921, 915227154, 915921829, 966050514, 2780633842, 3224354020, 2811436402, 3356061738, 2869850406, 3816654215, 2901353246, 3848245594, 3968257850, 4118042571, 3986872517, 4136657252, 4286441987, 4016767679, 4291888363, 11828352, 4294406256, 12615467, 34336214, 28243685, 34431872, 35649931, 35745512, 38555890, 45229641, 56346282, 53267571, 74768395, 60846513, 76229193, 85607371, 88523315, 96259463, 109594532, 110595371, 113333306, 119561081, 132640277, 145974051, 146974895, 149712814, 156828551, 169907765, 170908595, 173646524, 180762261, 193841465, 194842316, 197580225];
+        ascii += '\x80';
+        while (ascii.length%64 - 56) ascii += '\x00';
+        for (var i = 0; i < ascii.length; i++) words[i>>2] |= ascii.charCodeAt(i) << ((3 - i)%4)*8;
+        words[words.length] = ((asciiBitLength/maxWord)|0); words[words.length] = (asciiBitLength);
+        for (var j = 0; j < words.length;) {
+            var w = words.slice(j, j += 16); var oldHash = hash.slice(0);
+            for (var i = 0; i < 64; i++) {
+                var w15 = w[i - 15], w2 = w[i - 2]; var a = hash[0], e = hash[4];
+                var temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e&hash[5])^((~e)&hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15>>>3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2>>>10)))|0);
+                var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+                hash = [(temp1 + temp2)|0].concat(hash); hash[4] = (hash[4] + temp1)|0; hash.pop();
+            }
+            for (var i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i])|0;
+        }
+        for (var i = 0; i < 8; i++) for (var j = 3; j + 1; j--) { var b = (hash[i]>>(j*8))&255; result += ((b < 16) ? 0 : '') + b.toString(16); }
+        return result;
+    },
+    sha256d: function(str) { return this.sha256(this.sha256(str)); },
+
     getTimeString: () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Bangkok', hour12: false }),
     shortenHash: (hash) => { if (!hash || hash.length < 12) return hash || "Syncing..."; return hash.substring(0, 12) + '...' + hash.substring(hash.length - 5); },
     deterministicHash: (input) => {
@@ -128,15 +197,12 @@ var Utils = {
         const response = await fetch(resource, { ...options, signal: controller.signal });
         clearTimeout(id); return response;
     },
-    
-    // ===== อัปเดตระบบ Heal Network คำนวณระยะทางโหนดและสร้างเส้นประดาวเทียม =====
     healNetwork() {
         const allNodes = Object.keys(CONFIG.CONNECTIONS);
         const healthyNodes = allNodes.filter(n => !STATE.bannedNodes.has(n));
         let root = healthyNodes.includes('me') ? 'me' : (healthyNodes.length > 0 ? healthyNodes[0] : null);
         if (!root) return;
 
-        // ค้นหาโหนดที่ยังต่อกันเป็นเครือข่ายหลักอยู่
         let visited = new Set([root]); let queue = [root];
         while(queue.length > 0) {
             let curr = queue.shift();
@@ -148,7 +214,6 @@ var Utils = {
             }
         }
 
-        // ค้นหาโหนดที่โดนลอยแพ (Isolated) ไม่มีเส้นทางไปเครือข่ายหลัก
         let isolatedNodes = healthyNodes.filter(n => !visited.has(n));
         
         if (isolatedNodes.length > 0) {
@@ -156,7 +221,6 @@ var Utils = {
                 let connectedNodes = Array.from(visited);
                 if (connectedNodes.length === 0) return;
 
-                // 1. หาโหนดเป้าหมายที่อยู่ใกล้ที่สุดจากแกนพิกัด X,Y
                 let closestPeer = null;
                 let minDistance = Infinity;
                 const isoPos = CONFIG.NODE_POS[iso];
@@ -164,7 +228,6 @@ var Utils = {
                 connectedNodes.forEach(peer => {
                     const peerPos = CONFIG.NODE_POS[peer];
                     if (isoPos && peerPos) {
-                        // คำนวณระยะทางแบบเส้นตรง (Euclidean Distance)
                         const dist = Math.hypot(isoPos[0] - peerPos[0], isoPos[1] - peerPos[1]);
                         if (dist < minDistance) {
                             minDistance = dist;
@@ -173,39 +236,31 @@ var Utils = {
                     }
                 });
 
-                // หากหาพิกัดไม่ได้ ให้สุ่มดึงมาหนึ่งโหนด
                 let peer = closestPeer || connectedNodes[Math.floor(Math.random() * connectedNodes.length)];
 
-                // 2. บันทึกเส้นทางใหม่ลงในข้อมูลระบบ (ป้องกันการใส่ข้อมูลซ้ำ)
                 if (!CONFIG.CONNECTIONS[iso].includes(peer)) CONFIG.CONNECTIONS[iso].push(peer); 
                 if (!CONFIG.CONNECTIONS[peer].includes(iso)) CONFIG.CONNECTIONS[peer].push(iso);
 
-                // 3. วาดเส้นทางลงบนแผนที่
                 const svg = document.querySelector('svg');
                 if (svg && CONFIG.NODE_POS && CONFIG.NODE_POS[iso] && CONFIG.NODE_POS[peer]) {
                     const lineId1 = `l-${iso}-${peer}`;
                     const lineId2 = `l-${peer}-${iso}`;
                     
-                    // สร้างใหม่ต่อเมื่อยังไม่มีเส้นนี้เท่านั้น
                     if (!document.getElementById(lineId1) && !document.getElementById(lineId2)) {
                         const newLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                         newLine.setAttribute('id', lineId1); 
-                        // ใส่คลาส net-link เพื่อให้มันแสดงผลและรับไฟวิ่งเหมือนเส้นเดิม 100%
                         newLine.setAttribute('class', 'net-link');
                         newLine.setAttribute('x1', CONFIG.NODE_POS[iso][0]); 
                         newLine.setAttribute('y1', CONFIG.NODE_POS[iso][1]);
                         newLine.setAttribute('x2', CONFIG.NODE_POS[peer][0]); 
                         newLine.setAttribute('y2', CONFIG.NODE_POS[peer][1]);
                         
-                        // หากเชื่อมกับดาวเทียม ให้เปลี่ยนเป็นเส้นประผ่าน Attribute แทน Inline CSS
                         if (iso.startsWith('sat') || peer.startsWith('sat')) {
                             newLine.setAttribute('stroke-dasharray', '1.5 1.5');
                         }
 
-                        // นำเส้นไปวางในล่างสุดของ SVG จะได้ไม่ทับโหนด (Nodes)
                         svg.insertBefore(newLine, svg.firstChild);
                         
-                        // แจ้งเตือน Log
                         if (typeof UI !== 'undefined') {
                             UI.addLiveNodeLog(`🔧 [Self-Healing] ${iso.toUpperCase()} ถูกตัดขาด! สร้างเส้นทาง P2P ใหม่ไปยังโหนด: ${peer.toUpperCase()}`, 'system');
                         }
