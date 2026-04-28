@@ -1,0 +1,32 @@
+<div id="modal-p2p-gossip" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-cyan-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(34,211,238,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-cyan-950/40 px-4 py-3 border-b border-cyan-800/50 flex justify-between items-center z-10">
+            <span class="text-cyan-400 font-bold flex items-center gap-2 text-sm sm:text-base">💬 Live Node P2P Gossip</span>
+            <button onclick="App.toggleModal('modal-p2p-gossip', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">ออกแบบมาเพื่อสื่อว่า</h4>
+                <p class="leading-relaxed text-slate-400">คำว่า <b>"Gossip (ซุบซิบ)"</b> เป็นชื่อเรียกของ Protocol การสื่อสารจริงๆ ที่โหนดบิตคอยน์ใช้งาน หน้าต่างแชทนี้ออกแบบมาเพื่อให้เห็นว่า เมื่อบล็อกใหม่ถูกค้นพบ โหนดหนึ่งจะ "สะกิด" บอกโหนดเพื่อนบ้าน จากนั้นเพื่อนบ้านก็จะตรวจสอบและส่งต่อกันไปเรื่อยๆ จนข้อมูลบล็อกเชนแพร่กระจายครบทุกโหนดทั่วโลกภายในเวลาเพียงไม่กี่วินาที</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-amber-400 font-bold mb-1 text-sm">ในความเป็นจริงเป็นอย่างไร?</h4>
+                <p class="leading-relaxed text-slate-400">แอนิเมชันในหน้าเว็บนี้ถูกทำให้ช้าลงเพื่อให้มนุษย์อ่านทัน แต่ในโลกจริง โหนดทำงานหนักและฉลาดกว่านี้มาก</p>
+                <p class="leading-relaxed text-slate-400 mt-2">โหนด <b>จะไม่สาดข้อมูลก้อนใหญ่ (Block ขนาด 4MB) ทิ้งขว้างไปให้ทุกคนพร้อมกัน</b> เพราะนั่นจะทำให้อินเทอร์เน็ตพังพินาศจาก Bandwidth ที่มหาศาล โหนดบิตคอยน์จึงมีกติกาการคุยที่รัดกุมมาก:</p>
+                
+                <ul class="list-disc pl-5 mt-3 space-y-2 text-slate-300 bg-black/40 p-3 rounded border border-slate-800">
+                    <li><b class="text-amber-400">1. INV (Inventory):</b> โหนด A จะกระซิบแค่รหัส Hash เล็กๆ ไปบอกโหนด B ว่า <i>"เห้ย ฉันมีบล็อกตัวนี้นะ เอามั้ย?"</i></li>
+                    <li><b class="text-fuchsia-400">2. GETDATA:</b> โหนด B จะเช็คฐานข้อมูลตัวเอง ถ้ายังไม่มีบล็อกนี้ ก็จะตอบกลับไปว่า <i>"เออ ยังไม่มี ส่งมาเลย!"</i></li>
+                    <li><b class="text-cyan-400">3. BLOCK / TX:</b> โหนด A ถึงจะยอมส่งข้อมูลก้อนใหญ่ให้จริงๆ</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-1">เบื้องหลังความเงียบ</h4>
+                <p class="leading-relaxed text-slate-400">ในขณะที่คุณกำลังอ่านข้อความนี้ โหนดนับหมื่นทั่วโลกกำลังแลกเปลี่ยนข้อความ <code class="text-xs bg-slate-800 px-1 rounded">INV</code> และ <code class="text-xs bg-slate-800 px-1 rounded">GETDATA</code> กันนับพันๆ ครั้งต่อวินาทีอย่างเงียบเชียบ เพื่อซิงค์ธุรกรรมเล็กๆ น้อยๆ ใน Mempool ให้ตรงกันตลอดเวลา ไม่ได้แลกเปลี่ยนกันแค่ตอนที่บล็อกถูกขุดเจอเท่านั้นครับ</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -223,12 +223,26 @@
     Promise.all([
         fetch('mempool.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ mempool.html'); return res.text(); }),
         fetch('miner.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ miner.html'); return res.text(); }),
-        fetch('validator.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ validator.html'); return res.text(); })
-    ]).then(([p1, p2, p3]) => {
+        fetch('validator.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ validator.html'); return res.text(); }),
+        fetch('modal_difficulty.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_nonce.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_subsidy.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_fee.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_mempool.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_miner.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_validator.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_tx_sort.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_block_size.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_p2p_network.html').then(res => res.ok ? res.text() : ''),
+        fetch('modal_p2p_gossip.html').then(res => res.ok ? res.text() : '')
+    ]).then(([p1, p2, p3, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11]) => {
         
         document.getElementById('part1-mempool').innerHTML = p1;
         document.getElementById('part2-miner').innerHTML = p2;
         document.getElementById('part3-validator').innerHTML = p3;
+        
+        // แทรก Modals ทั้งหมดลงไปใน Body
+        document.body.insertAdjacentHTML('beforeend', m1 + m2 + m3 + m4 + m5 + m6 + m7 + m8 + m9 + m10 + m11);
 
         const loadScript = (src) => new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -244,6 +258,7 @@
             .then(() => loadScript('./asset/js/ui_core_blockchain_details.js'))
             .then(() => loadScript('./asset/js/ui_core_blockchain_mempool.js'))
             .then(() => loadScript('./asset/js/ui_leaderboard.js'))
+            .then(() => loadScript('./asset/js/modal_logic.js'))
             .then(() => loadScript('./asset/js/engine_core.js'))
             .then(() => loadScript('./asset/js/engine_mining_bot.js'))
             .then(() => loadScript('./asset/js/engine_mining_player.js'))

@@ -1,0 +1,35 @@
+<div id="modal-nonce" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-emerald-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(16,185,129,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-emerald-950/40 px-4 py-3 border-b border-emerald-800/50 flex justify-between items-center z-10">
+            <span class="text-emerald-400 font-bold flex items-center gap-2 text-sm sm:text-base">⚙️ กลยุทธ์ Nonce</span>
+            <button onclick="App.toggleModal('modal-nonce', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">Nonce คืออะไร?</h4>
+                <p class="leading-relaxed text-slate-400"><b>Nonce (Number used once)</b> คือตัวเลขสุ่มที่นักขุดจะทำการเปลี่ยนไปเรื่อยๆ เพื่อนำไปรวมกับข้อมูลอื่นๆ ใน Block Header แล้วทำการ Hash ใหม่ หวังฟลุ๊คให้ได้ผลลัพธ์น้อยกว่าค่า Target</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-amber-400 font-bold mb-1 text-sm">การสุ่มใน Simulator vs โลกความเป็นจริง</h4>
+                <p class="leading-relaxed text-slate-400">ในเว็บ Simulator นี้ ผู้เล่นสามารถเลือก "กลยุทธ์" การสุ่มตัวเลขได้ (เช่น สุ่มจาก 0 ไล่ขึ้นไป, สุ่มจากหลังมาหน้า, หรือสุ่มแบบ Random) </p>
+                <p class="leading-relaxed text-slate-400 mt-2">แต่ในโลกความเป็นจริง ช่องเก็บ Nonce ใน Block Header ถูกออกแบบมาให้มีขนาดเพียง <b>32-bit</b> ซึ่งหมายความว่ามันเก็บตัวเลขได้สูงสุดประมาณ <b>4.3 พันล้านค่าเท่านั้น (0 ถึง 4,294,967,295)</b></p>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-2">ทำไมกลยุทธ์จึง "ไร้ความหมาย" ในปัจจุบัน?</h4>
+                <p class="leading-relaxed text-slate-400">ด้วยเครื่องขุด ASIC ในยุคปัจจุบันที่มีกำลังขุดระดับ Terahash/s (ล้านล้านครั้งต่อวินาที) เครื่องขุดสามารถสุ่มตัวเลขทั้ง 4.3 พันล้านค่าจนหมดเกลี้ยงได้ภายในเวลา <b><span class="text-rose-400 font-bold">ไม่ถึง 0.00001 วินาที!</span></b></p>
+                <p class="leading-relaxed text-slate-400 mt-2">นักขุดในโลกจริงจึงไม่มีใครมานั่งวางแผนกลยุทธ์ Nonce กันแล้ว เพราะไม่ว่าจะเริ่มสุ่มจากหน้าไปหลัง หรือหลังมาหน้า เครื่องขุดก็กวาดตัวเลขทั้งหมดรวดเดียวจบในพริบตา</p>
+            </div>
+
+            <div class="bg-cyan-950/20 p-3 rounded-lg border border-cyan-900/50 mt-2">
+                <h4 class="text-cyan-400 font-bold mb-1 text-sm">อ้าว... แล้วถ้ารันจบ 4.3 พันล้านรอบแล้วยังหาไม่เจอ ทำยังไงต่อล่ะ?</h4>
+                <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-400">
+                    <li><b class="text-white">Time Rolling:</b> นักขุดจะทำการขยับค่า Timestamp เดินหน้าไป 1 วินาที ซึ่งจะทำให้ Block Header เปลี่ยนรูปไปทั้งหมด และเปิดโอกาสให้สุ่ม Nonce ใหม่ได้อีก 4.3 พันล้านรอบ</li>
+                    <li><b class="text-white">ExtraNonce:</b> หาก Time Rolling ยังไม่พอ นักขุดจะลงไปแทรกข้อความพิเศษใน Coinbase Transaction ซึ่งจะทำให้ <span class="text-fuchsia-400 font-bold">Merkle Root</span> เปลี่ยนแปลง และสะเทือนมาถึง Block Header ทำให้สุ่ม Nonce ได้ใหม่อีกนับไม่ถ้วน!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

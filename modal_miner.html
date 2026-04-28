@@ -1,0 +1,30 @@
+<div id="modal-miner" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-fuchsia-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(217,70,239,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-fuchsia-950/40 px-4 py-3 border-b border-fuchsia-800/50 flex justify-between items-center z-10">
+            <span class="text-fuchsia-400 font-bold flex items-center gap-2 text-sm sm:text-base">⛏️ Node Miner</span>
+            <button onclick="App.toggleModal('modal-miner', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">Node Miner คืออะไร มีหน้าที่อะไร?</h4>
+                <p class="leading-relaxed text-slate-400"><b>Node Miner (นักขุด)</b> คือผู้ให้บริการพลังการประมวลผลแก่เครือข่าย หน้าที่หลักคือการนำธุรกรรมที่รออยู่ใน Mempool มามัดรวมกันเป็นบล็อก และทุ่มเทกำลังขุดหาตัวเลข (Nonce) เพื่อแก้สมการทางคณิตศาสตร์ที่เรียกว่า <b>Proof-of-Work (PoW)</b> หากทำสำเร็จเป็นคนแรก จะได้รับสิทธิ์ในการเพิ่มบล็อกใหม่ลงในบล็อกเชนและรับรางวัล</p>
+            </div>
+
+            <div class="bg-fuchsia-950/20 p-3 rounded-lg border border-fuchsia-900/50">
+                <h4 class="text-fuchsia-400 font-bold mb-1 text-sm">การทำงานในอดีต (ยุคซาโตชิ) แตกต่างกับปัจจุบันอย่างไร?</h4>
+                <p class="leading-relaxed text-slate-400">ในยุคแรกเริ่ม (ปี 2009) <b>ทุกคนสามารถเป็นนักขุดได้ด้วย CPU คอมพิวเตอร์ธรรมดาในบ้าน (Solo Mining)</b> โปรแกรม Bitcoin Core สมัยนั้นทำหน้าที่ทั้งการเป็นกระเป๋าเงิน, ตรวจสอบเครือข่าย, และขุดไปพร้อมๆ กันในตัวเดียว</p>
+                <p class="leading-relaxed text-slate-400 mt-2">แต่ในปัจจุบัน ความยากในการแก้สมการเพิ่มขึ้นมหาศาล การขุดจึงกลายเป็น <b>อุตสาหกรรมขนาดใหญ่</b> ต้องใช้เครื่องขุดเฉพาะทางที่เรียกว่า <b>ASIC</b> ซึ่งประมวลผล SHA-256d ได้ล้านล้านครั้งต่อวินาที นอกจากนี้ นักขุดยังต้องรวมตัวกันเป็น <b>Mining Pool</b> เพื่อแบ่งปันกำลังขุดและผลกำไรร่วมกัน</p>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-2">ปัจจุบันทำงานยังไง?</h4>
+                <ul class="list-disc pl-5 mt-2 space-y-2 text-slate-400">
+                    <li>เครื่อง ASIC ในปัจจุบันทำหน้าที่เป็นแค่ "เครื่องจักรคิดเลขตาบอด" มันไม่รู้ด้วยซ้ำว่ากำลังประมวลผลธุรกรรมอะไร</li>
+                    <li>สิ่งที่จัดแจงธุรกรรมและสร้าง <b>Block Template</b> คือเซิร์ฟเวอร์ของ Mining Pool</li>
+                    <li>เครื่อง ASIC จะรับแค่ส่วนหัวของบล็อก (Block Header) มาทำการสุ่มหาค่า <code>Nonce</code> ไปเรื่อยๆ จนกว่าจะได้ค่า Hash ที่น้อยกว่า <code>Target</code> ตามที่เครือข่ายกำหนด</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

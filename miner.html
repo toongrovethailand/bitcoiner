@@ -1,15 +1,16 @@
 <div class="flex flex-col gap-4">
-    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2 mb-2">
-        <span class="text-2xl">⛏️</span> Node Miner
+    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2 mb-2 cursor-pointer hover:text-cyan-400 transition-colors w-max group" onclick="App.toggleModal('modal-miner', true)">
+        <span class="text-2xl">⛏️</span> 
+        <span class="underline decoration-dashed decoration-slate-500/50 group-hover:decoration-current underline-offset-4">Node Miner</span>
     </h2>
     
     <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-inner flex flex-col h-[380px] sm:h-[410px] shrink-0">
         <div class="flex justify-between items-center mb-3 shrink-0">
-            <p class="text-sm font-bold tracking-wider text-slate-300 flex items-center">
-                1. จัดเรียงธุรกรรม (คลิก)
+            <p class="text-sm font-bold tracking-wider text-slate-300 flex items-center cursor-pointer hover:text-cyan-400 transition-colors group" onclick="App.toggleModal('modal-tx-sort', true)">
+                <span class="underline decoration-dashed decoration-slate-500/50 group-hover:decoration-current underline-offset-4">1. จัดเรียงธุรกรรม (คลิก)</span>
             </p>
-            <div class="flex items-center">
-                <span class="text-xs text-amber-500 bg-amber-950/30 px-2 py-1 rounded border border-amber-900/50 font-medium">
+            <div class="flex items-center cursor-pointer hover:opacity-80 transition-opacity" onclick="App.toggleModal('modal-block-size', true)">
+                <span class="text-xs text-amber-500 bg-amber-950/30 px-2 py-1 rounded border border-amber-900/50 font-medium underline decoration-dashed decoration-amber-500/50 underline-offset-4">
                 จำกัด 4000 vB
                 </span>
             </div>
@@ -45,14 +46,18 @@
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 relative z-10 w-full items-end">
             <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] sm:text-xs text-slate-400 font-bold truncate">2. ความยาก (Target)</label>
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold cursor-pointer hover:text-cyan-400 transition-colors inline-block w-max" onclick="App.toggleModal('modal-difficulty', true); ModalLogic.updateDiffStats();">
+                    <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">2. ความยาก (Target)</span>
+                </label>
                 <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
                     <input type="number" id="input-difficulty" value="3" min="1" max="19" class="bg-transparent w-full text-cyan-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
                 </div>
             </div>
             
             <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] sm:text-xs text-slate-400 font-bold flex items-center gap-1 truncate">3. กลยุทธ์ Nonce</label>
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold cursor-pointer hover:text-emerald-400 transition-colors inline-block w-max" onclick="App.toggleModal('modal-nonce', true);">
+                    <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">3. กลยุทธ์ Nonce</span>
+                </label>
                 <div class="relative w-full h-[38px]">
                     <select id="nonce-strategy-selector" class="w-full h-full bg-slate-950 border border-slate-700 text-emerald-400 hover:border-emerald-500/60 text-[11px] sm:text-xs font-bold font-mono rounded px-2 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer shadow-inner transition-colors" onchange="STATE.nodeNonceStrategies['me'] = this.value">
                         <option value="linear">1. Sequential</option>
@@ -66,14 +71,18 @@
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] sm:text-xs text-slate-400 font-bold truncate">4. เคลมรายได้ (Subsidy)</label>
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold cursor-pointer hover:text-emerald-400 transition-colors inline-block w-max" onclick="App.toggleModal('modal-subsidy', true);">
+                    <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">4. เคลมรายได้ (Subsidy)</span>
+                </label>
                 <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
                     <input type="number" id="input-subsidy" value="312500000" step="1" class="bg-transparent w-full text-emerald-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
                 </div>
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] sm:text-xs text-slate-400 font-bold truncate">5. ค่าธรรมเนียม (Fee)</label>
+                <label class="text-[11px] sm:text-xs text-slate-400 font-bold cursor-pointer hover:text-amber-400 transition-colors inline-block w-max" onclick="App.toggleModal('modal-fee', true);">
+                    <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">5. ค่าธรรมเนียม (Fee)</span>
+                </label>
                 <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
                     <input type="number" id="input-fee" value="0" step="1" class="bg-transparent w-full text-amber-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
                 </div>

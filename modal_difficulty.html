@@ -1,0 +1,40 @@
+<div id="modal-difficulty" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-cyan-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(34,211,238,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-cyan-950/40 px-4 py-3 border-b border-cyan-800/50 flex justify-between items-center z-10">
+            <span class="text-cyan-400 font-bold flex items-center gap-2 text-sm sm:text-base">🎯 ความยาก (Difficulty) และ Target</span>
+            <button onclick="App.toggleModal('modal-difficulty', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">Difficulty Target คืออะไร?</h4>
+                <p class="leading-relaxed text-slate-400">เป้าหมาย (Target) คือตัวเลข 256-bit ที่เครือข่ายตั้งไว้เป็นเกณฑ์ กติกาคือ <b class="text-cyan-300">"Hash ของบล็อกจะต้องมีค่าน้อยกว่าหรือเท่ากับค่า Target นี้"</b> พูดง่ายๆ คือ ยิ่งมีเลขศูนย์ (0) นำหน้าเยอะเท่าไหร่ ยิ่งแปลว่าเป้าหมายแคบลงและขุดยากขึ้นเท่านั้น</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-amber-400 font-bold mb-1 text-sm">ทำไมในเว็บ Simulator นี้จึงใช้ความยากระดับ 3?</h4>
+                <p class="leading-relaxed text-slate-400">การประมวลผล SHA-256d ผ่านเบราว์เซอร์ (JavaScript) มีข้อจำกัดเรื่องประสิทธิภาพมาก กำลังขุดของคอมพิวเตอร์ทั่วไปเมื่อรันบนเว็บจะอยู่ที่หลักร้อย Hash/วินาที การหา 0 นำหน้า 3 ตัว (Target 3) ต้องใช้การสุ่มประมาณ 4,096 รอบ ซึ่งเป็นระดับที่เบราว์เซอร์คุณสามารถหาเจอได้ในเวลาไม่กี่วินาที</p>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-2">เปรียบเทียบสถิติ Simulator vs โลกความเป็นจริง</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-[10px] sm:text-[11px]">
+                    <div class="bg-slate-900 p-3 rounded border border-slate-800">
+                        <span class="text-slate-500 block mb-1">สถิติโลกความเป็นจริง (Mempool Live)</span>
+                        <div>Target (ประมาณ): <span class="text-cyan-400" id="diff-stat-net-target">Syncing...</span></div>
+                        <div>กำลังขุดรวมของโลก: <span class="text-amber-400" id="diff-stat-net-hash">Syncing...</span></div>
+                        <div class="text-[9px] text-slate-500 mt-1" id="diff-stat-net-hash-raw">(...)</div>
+                    </div>
+                    <div class="bg-cyan-950/20 p-3 rounded border border-cyan-900/50 flex flex-col justify-between">
+                        <div>
+                            <span class="text-slate-500 block mb-1">เครื่องของคุณ (Local Device)</span>
+                            <div>กำลังขุดบนเว็บ: <span class="text-emerald-400" id="diff-stat-local">... H/s</span></div>
+                            <div class="mt-2 text-rose-400 font-bold leading-tight">หากคุณนำเครื่องนี้ไปขุดหา 1 บล็อกบนเครือข่ายจริง คุณจะต้องใช้เวลาเฉลี่ย:</div>
+                            <div class="text-rose-300 text-sm mt-1" id="diff-stat-time">Calculating...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

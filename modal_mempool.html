@@ -1,0 +1,28 @@
+<div id="modal-mempool" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-cyan-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(34,211,238,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-cyan-950/40 px-4 py-3 border-b border-cyan-800/50 flex justify-between items-center z-10">
+            <span class="text-cyan-400 font-bold flex items-center gap-2 text-sm sm:text-base">🌐 Mempool & Blockchain State</span>
+            <button onclick="App.toggleModal('modal-mempool', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">Mempool คืออะไร?</h4>
+                <p class="leading-relaxed text-slate-400"><b>Mempool (Memory Pool)</b> เปรียบเสมือน "ห้องพักผู้โดยสาร" หรือ "ลานจอดรถ" สำหรับธุรกรรม (Transactions) ที่ถูกส่งเข้าสู่เครือข่ายบิตคอยน์ แต่ยังไม่ได้รับการยืนยัน (Unconfirmed) และยังไม่ได้ถูกบรรจุลงในบล็อกเชน ทุกๆ โหนดในเครือข่ายจะมี Mempool เป็นของตัวเอง</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-amber-400 font-bold mb-1 text-sm">แรงบันดาลใจจาก Mempool.space</h4>
+                <p class="leading-relaxed text-slate-400">การแสดงผลในส่วนบนของ Simulator นี้ ได้รับแรงบันดาลใจมาจากเว็บไซต์ <b>mempool.space</b> ซึ่งเป็นเครื่องมือยอดนิยมที่ช่วยแปลงข้อมูลนามธรรมให้กลายเป็นภาพที่เข้าใจง่าย</p>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-2">ทำไมมันถึงช่วยให้เข้าใจง่ายขึ้น?</h4>
+                <ul class="list-disc pl-5 mt-2 space-y-2 text-slate-400">
+                    <li><b class="text-white">แบ่งแยกอดีตและอนาคตชัดเจน:</b> แกนกลางที่มีคำว่า "NOW" แบ่งแยกฝั่งขวา (อดีต - บล็อกที่ถูกบันทึกแล้ว) และฝั่งซ้าย (อนาคต - ธุรกรรมที่กำลังรอคิว)</li>
+                    <li><b class="text-white">เห็นการประมูลพื้นที่:</b> ธุรกรรมที่จ่ายค่าธรรมเนียมสูง (Top Fee) จะถูกจัดเรียงไว้คิวแรกสุดฝั่งซ้าย รอให้นักขุดหยิบไปประมวลผลก่อนเสมอ</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

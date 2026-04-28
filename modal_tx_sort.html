@@ -1,0 +1,30 @@
+<div id="modal-tx-sort" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-cyan-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(34,211,238,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-cyan-950/40 px-4 py-3 border-b border-cyan-800/50 flex justify-between items-center z-10">
+            <span class="text-cyan-400 font-bold flex items-center gap-2 text-sm sm:text-base">📝 1. จัดเรียงธุรกรรม</span>
+            <button onclick="App.toggleModal('modal-tx-sort', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">จุดเริ่มต้นของธุรกรรม (Transaction Origin)</h4>
+                <p class="leading-relaxed text-slate-400">เมื่อมีใครสักคนในโลกนี้กดโอนบิตคอยน์ หรือทำการจารึกข้อมูล (Inscriptions) ลงบนเครือข่าย ธุรกรรมเหล่านั้นจะถูกส่งกระจ่ายออกไปหาโหนดต่างๆ และไปรวมตัวกันรอคิวอยู่ที่ "Mempool" เพื่อรอการยืนยัน</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-amber-400 font-bold mb-2 text-sm">ข้อมูลธุรกรรมนับรวมอะไรบ้าง?</h4>
+                <ul class="list-disc pl-5 space-y-2 text-slate-400">
+                    <li><b class="text-white">ข้อมูลการรับ-ส่งบิตคอยน์:</b> ระบุที่มา (Inputs) และที่ไป (Outputs) รวมถึงจำนวนเหรียญที่โอน</li>
+                    <li><b class="text-white">ลายเซ็นดิจิทัล (Digital Signature):</b> หรือเรียกว่า Witness Data เพื่อพิสูจน์ว่าผู้ส่งเป็นเจ้าของเหรียญนั้นจริงๆ</li>
+                    <li><b class="text-white">ข้อมูล Data อื่นๆ:</b> ในปัจจุบัน นอกจากการโอนเงินแล้ว ยังมีการฝังข้อมูลแปลกปลอมลงไปในบล็อกเชนด้วย เช่น การใช้คำสั่ง <code class="text-xs bg-slate-800 px-1 rounded">OP_RETURN</code> เพื่อบันทึกข้อความสั้นๆ หรือการใช้ <span class="text-cyan-300">Ordinals Inscriptions</span> เพื่อยัดรูปภาพ, ไฟล์เสียง, หรือแม้แต่ไฟล์เกม ลงไปในส่วนของ Witness Data </li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-2">การออกแบบ Simulator vs โลกความเป็นจริง</h4>
+                <p class="leading-relaxed text-slate-400">ใน <b>Simulator นี้</b> ถูกออกแบบมาเพื่อให้คุณได้เห็นภาพกระบวนการด้วยตัวเอง (Interactive) คุณจึงสามารถคลิกเลือกธุรกรรมแต่ละตัวจาก Mempool มาเรียงใส่บล็อกเตรียมขุด (Candidate Block) ทีละรายการได้ตามใจชอบ</p>
+                <p class="leading-relaxed text-slate-400 mt-2">แต่ใน <b>โลกความเป็นจริง</b> นักขุดที่คุมเครื่อง ASIC ไม่ต้องมานั่งคลิกเลือกทีละอัน ระบบหรือเซิร์ฟเวอร์ของ <span class="text-rose-400 font-bold">Mining Pool</span> จะใช้ซอฟต์แวร์ประมวลผลและดึงธุรกรรมที่ให้ค่าธรรมเนียมต่อขนาด (sat/vB) สูงที่สุดมารวมกันเป็น "Block Template" อัตโนมัติ เพื่อให้ได้ผลกำไรสูงสุดในพริบตา</p>
+            </div>
+        </div>
+    </div>
+</div>

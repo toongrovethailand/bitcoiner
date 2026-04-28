@@ -1,0 +1,35 @@
+<div id="modal-block-size" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-amber-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(245,158,11,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-amber-950/40 px-4 py-3 border-b border-amber-800/50 flex justify-between items-center z-10">
+            <span class="text-amber-400 font-bold flex items-center gap-2 text-sm sm:text-base">📦 ขีดจำกัดพื้นที่ 4000 vB</span>
+            <button onclick="App.toggleModal('modal-block-size', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">พื้นที่ส่วนนี้คืออะไร?</h4>
+                <p class="leading-relaxed text-slate-400">นี่คือ <b>"ขนาดความจุของบล็อก (Block Size Limit)"</b> กฎกติกาของบิตคอยน์กำหนดขีดจำกัดขนาดข้อมูลเอาไว้ เพื่อป้องกันไม่ให้เครือข่ายบวมเร็วเกินไป และเพื่อให้คอมพิวเตอร์ทั่วไปยังสามารถดาวน์โหลดและเป็น Full Node ได้ พื้นที่ตรงนี้จึงเปรียบเสมือน "อสังหาริมทรัพย์ที่แพงที่สุดในโลกดิจิทัล"</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-amber-400 font-bold mb-1 text-sm">ทำไมในเว็บถึงจำกัดไว้ที่ 4000 vB?</h4>
+                <p class="leading-relaxed text-slate-400">ในหน้าเว็บ Simulator นี้ เราจำลองย่อส่วน (Scale Down) ขนาดความจุลงมาเหลือเพียง <b>4,000 vB</b> เพื่อให้คุณสามารถเห็นภาพธุรกรรมประมาณ 10-20 รายการเต็มบล็อกพอดี หากเราใช้ขนาดจริง คุณอาจจะต้องนั่งคลิกเลือกธุรกรรมทีละรายการถึง 3,000 ครั้งกว่าบล็อกจะเต็ม ซึ่งคงไม่เหมาะกับการทำ UI ให้ผู้คนเรียนรู้ครับ</p>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-2">ความจุในโลกความเป็นจริง (Mainnet)</h4>
+                <ul class="list-disc pl-5 space-y-2 text-slate-400">
+                    <li>หลังจากอัปเดต SegWit บล็อกของบิตคอยน์ในโลกจริงถูกจำกัดไว้ที่ <b><span class="text-white">4,000,000 Weight Units (WU)</span></b></li>
+                    <li>เมื่อแปลงเป็นหน่วย Virtual Bytes (vB) จะตกอยู่ที่ประมาณ <b><span class="text-white">1,000,000 vB</span></b> (หรือขนาดไฟล์ดิบราวๆ ไม่เกิน 4 MB)</li>
+                    <li>ด้วยพื้นที่ 1 ล้าน vB นี้ ในโลกจริง 1 บล็อกจะสามารถบรรจุธุรกรรมโอนเงินมาตรฐานได้ประมาณ <b>2,000 - 4,000 รายการ</b> ต่อหนึ่งบล็อก (ทุก 10 นาที)</li>
+                </ul>
+            </div>
+
+            <div class="bg-cyan-950/20 p-3 rounded-lg border border-cyan-900/50 mt-2">
+                <h4 class="text-cyan-400 font-bold mb-1 text-sm">ความคุ้มค่าดูจากอะไร และส่งผลอะไรต่อค่าธรรมเนียม?</h4>
+                <p class="leading-relaxed text-slate-400">เพราะพื้นที่บล็อกมีจำกัด "ผู้ส่ง" จึงต้องประมูลแย่งพื้นที่กันด้วยการแนบค่าธรรมเนียม (Fee) ยิ่งผู้ส่งให้เงินรวมเยอะ และธุรกรรมมีขนาด Byte เล็ก ความคุ้มค่าที่เรียกว่า <b class="text-rose-400">sat/vB (ซาโตชิต่อไบต์)</b> ก็จะยิ่งสูง</p>
+                <p class="leading-relaxed text-slate-400 mt-2">นักขุดจะเรียงลำดับกวาดธุรกรรมที่มีค่า sat/vB สูงสุดใส่กล่องให้เต็ม 1,000,000 vB ก่อนเสมอ ใครที่จ่ายค่าธรรมเนียมด้วยเรท sat/vB ต่ำเกินไป ก็จะถูกทิ้งค้างไว้ใน Mempool ต่อไปเรื่อยๆ จนกว่าคิวจะว่างครับ</p>
+            </div>
+        </div>
+    </div>
+</div>

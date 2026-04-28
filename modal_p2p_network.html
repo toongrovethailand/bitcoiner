@@ -1,0 +1,27 @@
+<div id="modal-p2p-network" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-cyan-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(34,211,238,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-cyan-950/40 px-4 py-3 border-b border-cyan-800/50 flex justify-between items-center z-10">
+            <span class="text-cyan-400 font-bold flex items-center gap-2 text-sm sm:text-base">🌐 Global P2P Network</span>
+            <button onclick="App.toggleModal('modal-p2p-network', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">ออกแบบมาเพื่อสื่อว่า</h4>
+                <p class="leading-relaxed text-slate-400">แผนที่นี้ถูกออกแบบมาเพื่ออธิบายลักษณะความเป็น <b>Decentralized (ไร้ศูนย์กลาง)</b> ของบิตคอยน์ โหนดไม่ได้เชื่อมต่อผ่านเซิร์ฟเวอร์กลางใด ๆ แต่ใช้วิธีจับมือกันเองแบบใยแมงมุม (Mesh Network) ครอบคลุมทั่วโลก รวมถึงสื่อให้เห็นถึงการใช้ดาวเทียม (Blockstream Satellite) ที่ช่วยกระจายข้อมูลบล็อกเชนลงมายังพื้นที่ที่อินเทอร์เน็ตเข้าไม่ถึง</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-amber-400 font-bold mb-1 text-sm">ในความเป็นจริงเป็นอย่างไร?</h4>
+                <p class="leading-relaxed text-slate-400 mb-2">ใน Simulator นี้จำลองไว้เพียง 20 กว่าโหนด แต่ในโลกความเป็นจริง เครือข่ายบิตคอยน์มีโหนดที่เปิดเผยตัวตน (Reachable Nodes) ราวๆ 15,000 ถึง 20,000 โหนด และยังมีโหนดที่ซ่อนตัวอยู่หลังเครือข่าย Tor/I2P อีกมากกว่า 100,000 โหนด</p>
+                
+                <h5 class="text-emerald-400 font-bold mt-3 mb-1 text-[11px] sm:text-xs">ความแตกต่างที่สำคัญ:</h5>
+                <ul class="list-disc pl-5 space-y-2 text-slate-400">
+                    <li><b class="text-white">การเชื่อมต่อไม่ได้อิงตามภูมิศาสตร์:</b> โหนดในไทยไม่จำเป็นต้องเชื่อมกับเพื่อนบ้านในเอเชีย มันอาจจะสุ่มเชื่อมกับโหนดในไอซ์แลนด์ แอฟริกาใต้ หรืออเมริกาได้ เพื่อป้องกันการถูกปิดกั้นเส้นทางอินเทอร์เน็ตระดับประเทศ (Eclipse Attack)</li>
+                    <li><b class="text-white">การเชื่อมต่อเปลี่ยนแปลงตลอดเวลา:</b> เส้นทางที่คุณเห็นไม่ได้อยู่นิ่ง โหนดจะคอยเตะคนที่ออฟไลน์ทิ้ง และจับมือกับคนใหม่ๆ ตลอดเวลาแบบอัตโนมัติ</li>
+                    <li><b class="text-white">ดาวเทียมเป็นทางวันเวย์:</b> ในโลกจริง ดาวเทียมของ Blockstream จะทำการ "กระจายข้อมูล (Broadcast)" ลงมาให้โหนดบนพื้นดินรับฟังเพียงฝ่ายเดียวเป็นหลัก โหนดบนดินไม่ได้ส่งข้อมูลบล็อกกลับขึ้นไปบนดาวเทียมโดยตรงเหมือนในแอนิเมชันนี้ (แต่ดาวเทียมอัปเดตข้อมูลจากการรับส่งผ่านสถานีภาคพื้นดินอีกที)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

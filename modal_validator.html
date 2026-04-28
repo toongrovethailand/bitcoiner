@@ -1,0 +1,35 @@
+<div id="modal-validator" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-amber-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(245,158,11,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-amber-950/40 px-4 py-3 border-b border-amber-800/50 flex justify-between items-center z-10">
+            <span class="text-amber-400 font-bold flex items-center gap-2 text-sm sm:text-base">🛡️ Node Validator</span>
+            <button onclick="App.toggleModal('modal-validator', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">Node Validator คืออะไร มีหน้าที่อะไร?</h4>
+                <p class="leading-relaxed text-slate-400"><b>Node Validator (ผู้ตรวจสอบ)</b> คือโหนดที่ทำหน้าที่ <b>ผู้คุมกฎ (Enforcer)</b> ของเครือข่าย เมื่อมีบล็อกใหม่ถูกขุดพบ Node Validator จะรับข้อมูลมาเพื่อตรวจสอบความถูกต้องทั้งหมด (เช่น ลายเซ็นดิจิทัล, การจ่ายซ้ำซ้อน, ขนาดบล็อก, รางวัลที่เคลม) หากเจอบล็อกที่ทำผิดกติกาเพียงข้อเดียว มันจะปฏิเสธบล็อกนั้นทิ้งทันที!</p>
+            </div>
+
+            <div class="bg-amber-950/20 p-3 rounded-lg border border-amber-900/50">
+                <h4 class="text-amber-400 font-bold mb-1 text-sm">ในโลกความเป็นจริง แยกจาก Node Miner ยังไง?</h4>
+                <p class="leading-relaxed text-slate-400">ในยุคแรก โหนดขุดและโหนดตรวจสอบคือเครื่องเดียวกัน แต่ปัจจุบัน <b>แยกขาดจากกันชัดเจน</b> โหนดบนเครือข่ายบิตคอยน์ส่วนใหญ่ (>99%) คือ Node Validator ที่ไม่มีกำลังขุดเลย! พวกเขาคือคอมพิวเตอร์ส่วนตัวของผู้ใช้งานธรรมดาทั่วโลกที่รันซอฟต์แวร์เพื่อ <b>ปกป้องเครือข่าย (Don't Trust, Verify)</b> ทำให้นักขุดที่มีเครื่องมหาศาลก็ไม่สามารถโกงกฎของระบบได้</p>
+            </div>
+
+            <div>
+                <h4 class="text-emerald-400 font-bold mb-2">Node Validator ในปัจจุบันมีกี่แบบ?</h4>
+                <ul class="list-disc pl-5 mt-2 space-y-3 text-slate-400">
+                    <li>
+                        <b class="text-white">Archival Full Node:</b> โหนดแบบเต็มรูปแบบที่สุด มันจะเก็บประวัติการโอนเงินทุกรายการตั้งแต่ Genesis Block (บล็อกแรก) จนถึงปัจจุบัน (กินพื้นที่หลายร้อย GB) และสามารถตรวจสอบย้อนหลังได้ 100% ด้วยตัวเองโดยไม่ต้องเชื่อใจใคร
+                    </li>
+                    <li>
+                        <b class="text-white">Pruned Full Node:</b> โหนดเต็มรูปแบบเหมือนแบบแรก ตรวจสอบความถูกต้องได้ 100% เท่ากัน แต่เพื่อประหยัดพื้นที่จัดเก็บ มันจะลบข้อมูลบล็อกเก่าๆ ทิ้งไปหลังจากตรวจสอบเสร็จแล้ว (เก็บเฉพาะบล็อกล่าสุด)
+                    </li>
+                    <li>
+                        <b class="text-white">Light Node (SPV):</b> โหนดแบบเบา (เช่น แอปพลิเคชันกระเป๋าเงินบนมือถือ) ไม่ได้เก็บข้อมูลทั้งหมดและตรวจสอบเองทั้งหมดไม่ได้ มันจะต้องพึ่งพาการดึงข้อมูลจาก Full Node ของคนอื่นเพื่อเช็คเฉพาะธุรกรรมที่เกี่ยวข้องกับตัวเองเท่านั้น
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

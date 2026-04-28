@@ -1,0 +1,31 @@
+<div id="modal-fee" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-[#050B14] border border-amber-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(245,158,11,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content relative">
+        <div class="bg-amber-950/40 px-4 py-3 border-b border-amber-800/50 flex justify-between items-center z-10">
+            <span class="text-amber-400 font-bold flex items-center gap-2 text-sm sm:text-base">💸 ค่าธรรมเนียม (Fee) & Block Template</span>
+            <button onclick="App.toggleModal('modal-fee', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด</button>
+        </div>
+        
+        <div class="p-5 font-sans text-[11px] sm:text-sm text-slate-300 space-y-4 overflow-y-auto max-h-[70vh]">
+            <div>
+                <h4 class="text-white font-bold mb-1">ทำไมต้องจ่ายค่าธรรมเนียม (Tx Fee)?</h4>
+                <p class="leading-relaxed text-slate-400">พื้นที่จัดเก็บข้อมูลในหนึ่งบล็อก (Block Space) มีจำกัดแค่ประมาณ <b>4,000,000 Weight Units (WU)</b> หรือเทียบเท่า 4MB ดังนั้นเมื่อมีคนต้องการส่งธุรกรรมเยอะกว่าที่บล็อกจะรับไหว ผู้คนจึงต้อง <span class="text-amber-400 font-bold">จ่ายค่าผ่านทางประมูลแย่งพื้นที่กัน</span> เพื่อสร้างแรงจูงใจให้นักขุดหยิบธุรกรรมของตนลงบล็อกเป็นคิวแรกๆ</p>
+            </div>
+
+            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+                <h4 class="text-emerald-400 font-bold mb-1 text-sm">การพิจารณาความคุ้มค่า (sat/vB)</h4>
+                <p class="leading-relaxed text-slate-400">ในระบบของบิตคอยน์ การส่งเงิน 10 บาท หรือ 100 ล้านบาท <b>ไม่ส่งผลต่อค่าธรรมเนียม</b> สิ่งที่นักขุดพิจารณาคือ "ขนาดข้อมูล" (Data Size) ของธุรกรรมนั้นๆ</p>
+                <p class="leading-relaxed text-slate-400 mt-2">นักขุดจะนำค่า Fee ที่ผู้ใช้ยอมจ่าย มาหารด้วยขนาดของธุรกรรม (vB) ออกมาเป็นค่า <b>sat/vB</b> จากนั้นนักขุดจะเลือกกวาดธุรกรรมที่ให้ค่าความหนาแน่นของ sat/vB เยอะที่สุดใส่บล็อกให้เต็ม เพื่อรีดรายได้ให้คุ้มค่าที่สุด</p>
+            </div>
+
+            <div class="bg-amber-950/20 p-4 rounded-lg border border-amber-900/50 shadow-inner mt-2">
+                <h4 class="text-amber-400 font-bold mb-2">Block Template (การทำงานในโลกจริง)</h4>
+                <p class="leading-relaxed text-slate-300 mb-2">ในระบบจริง นักขุดที่คุมเครื่อง ASIC <span class="text-rose-400 font-bold">ไม่ได้เป็นคนมานั่งเลือกธุรกรรมเองเหมือนใน Simulator นี้!</span></p>
+                <ul class="list-disc pl-5 space-y-2 text-slate-400">
+                    <li>ผู้ที่ทำหน้าที่คัดกรองธุรกรรมจาก Mempool คือ <b>Mining Pool</b> (กลุ่มที่เปิดให้บริการรวบรวมพลังขุด) พวกเขาจะรัน Full Node และสร้างสิ่งที่เรียกว่า <b>Block Template</b> ที่อัดแน่นไปด้วยธุรกรรมที่ให้กำไรสูงสุด</li>
+                    <li>จากนั้น Pool จะทำการย่อยข้อมูลเหล่านั้นจนเหลือแค่ <b>Block Header (ขนาด 80 bytes)</b> แล้วส่งไปมอบหมายให้เครื่องขุด ASIC ทั่วโลกช่วยกันสุ่มหา Nonce</li>
+                    <li>ดังนั้น เครื่อง ASIC จึง <b>"ตาบอด"</b> พวกมันไม่รู้ด้วยซ้ำว่ากำลังประมวลผลธุรกรรมอะไร หรือโอนให้ใคร หน้าที่เดียวของมันคือการสับตัวเลขผ่านฟังก์ชัน SHA-256d แบบไม่ลืมหูลืมตาเท่านั้น</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

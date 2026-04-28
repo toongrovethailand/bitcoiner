@@ -1,6 +1,7 @@
 <div class="flex flex-col h-full gap-4">
-    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2 mb-2">
-        <span class="text-2xl">🛡️</span> Node Validator
+    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2 mb-2 cursor-pointer hover:text-cyan-400 transition-colors w-max group" onclick="App.toggleModal('modal-validator', true)">
+        <span class="text-2xl">🛡️</span> 
+        <span class="underline decoration-dashed decoration-slate-500/50 group-hover:decoration-current underline-offset-4">Node Validator</span>
     </h2>
     
     <div id="network-map-container" class="relative w-full h-[380px] sm:h-[410px] flex-shrink-0 bg-[#050B14] border border-slate-800 rounded-xl overflow-hidden shadow-inner">
@@ -8,8 +9,8 @@
 
         <div class="absolute top-4 left-4 z-[90] flex items-center gap-2 bg-slate-950/80 px-3 py-1.5 rounded border border-slate-800 backdrop-blur-sm">
             <div class="w-2.5 h-2.5 rounded-full bg-slate-500" id="net-status-dot"></div>
-            <h3 class="text-slate-300 text-xs font-bold uppercase tracking-wider flex items-center">
-                Global P2P Network
+            <h3 class="text-slate-300 text-xs font-bold uppercase tracking-wider flex items-center cursor-pointer hover:text-cyan-400 transition-colors w-max group" onclick="App.toggleModal('modal-p2p-network', true)">
+                <span class="underline decoration-dashed decoration-slate-500/50 group-hover:decoration-current underline-offset-4">Global P2P Network</span>
             </h3>
         </div>
 
@@ -87,8 +88,9 @@
 
     <div id="live-node-chat-container" class="hidden lg:flex flex-col w-full flex-grow border border-slate-800 rounded-xl bg-[#050B14] shadow-inner transition-colors duration-300 relative overflow-hidden h-[250px] mt-2">
         <div class="bg-slate-900 px-4 py-2.5 border-b border-slate-800 flex justify-between items-center z-10 shrink-0">
-            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2">
-                <span class="text-sm">💬</span> Live Node P2P Gossip
+            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer hover:text-cyan-400 transition-colors w-max group" onclick="App.toggleModal('modal-p2p-gossip', true)">
+                <span class="text-sm">💬</span> 
+                <span class="underline decoration-dashed decoration-slate-500/50 group-hover:decoration-current underline-offset-4">Live Node P2P Gossip</span>
             </span>
             <span class="flex h-2 w-2 relative">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
