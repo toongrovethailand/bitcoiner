@@ -95,6 +95,9 @@ var UI = {
                 if (line) { line.style.display = 'none'; }
             });
         }
+
+        // --- Event-Driven Update: สั่งอัปเดตสถิติ Leaderboard ทันทีที่มีการแบน ---
+        if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
     },
     showToast(message, type = 'error') {
         let container = document.getElementById('web3-toast-container');

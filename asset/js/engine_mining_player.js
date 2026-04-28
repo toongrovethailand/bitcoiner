@@ -273,6 +273,10 @@ Object.assign(window.Engine, {
                 time: finalTimeStr, miner: "คุณ (Simulator)", reward: `${totalClaimed.toLocaleString()} sats`, transactions: [...STATE.blockTxs], timeTaken: Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
             };
             STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = STATE.minedHash;
+            
+            // --- Event-Driven Update: สั่งอัปเดตสถิติ Leaderboard ทันทีที่มีการขุดสำเร็จ ---
+            if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
+            
             const strip = document.getElementById('blockchain-strip-right');
             if(strip) { const el = document.createElement('div'); el.className = 'block-cube my-new-block flex-shrink-0 z-10'; const curIdx = STATE.blockchain.length - 1; el.onclick = () => UI.showBlockDetails(curIdx); el.innerHTML = `<span class="text-cyan-400 font-bold text-lg sm:text-xl">#${STATE.liveHeight.toLocaleString()}</span><span class="text-slate-200 text-[10px] sm:text-xs mt-1 text-center leading-tight">Mined by<br>You</span><span class="text-emerald-400 text-[9px] mt-1 font-bold time-ago" data-ts="${now * 1000}">เพิ่งขุดเจอ</span>`; strip.insertBefore(el, strip.firstChild); while (strip.children.length > 4) { strip.removeChild(strip.children[strip.children.length - 3]); } }
             

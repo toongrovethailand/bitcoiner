@@ -46,9 +46,18 @@ var STATE = {
 
 var AudioEngine = {
     ctx: null,
+    isMuted: false,
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
+    toggleMute() {
+        this.isMuted = !this.isMuted;
+        const btn = document.getElementById('btn-sound-toggle');
+        if (btn) {
+            btn.innerHTML = this.isMuted ? '🔇' : '🔊';
+        }
+        return this.isMuted;
+    },
     play(freq, type, duration, vol = 0.1, slideFreq = null) { 
-        if (!this.ctx) return; 
+        if (!this.ctx || this.isMuted) return; 
         const osc = this.ctx.createOscillator(); 
         const gain = this.ctx.createGain(); 
         osc.type = type; 

@@ -1,10 +1,13 @@
 window.Leaderboard = {
+    lastRenderedHeight: -1,
+    lastRenderedBans: -1,
+    
     init() {
         if (!document.getElementById('leaderboard-modal')) {
             const modalHTML = `
             <div id="leaderboard-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[350] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
                 <div class="bg-[#050B14] border border-amber-500/50 rounded-xl flex flex-col w-full max-w-4xl h-[85vh] shadow-[0_0_50px_rgba(245,158,11,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content">
-                    <div class="bg-amber-950/40 px-4 py-3 border-b border-amber-800/50 flex justify-between items-center">
+                    <div class="bg-amber-950/40 px-4 py-3 border-b border-amber-800/50 flex justify-between items-center shrink-0 z-10">
                         <span class="text-amber-400 font-bold flex items-center gap-2">🏆 สถิติการขุดและกระดานผู้นำ (Leaderboard)</span>
                         <button onclick="window.UI.toggleModal('leaderboard-modal', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด (Close)</button>
                     </div>
@@ -51,6 +54,21 @@ window.Leaderboard = {
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="bg-slate-900/90 border-t border-slate-800 p-3 sm:p-4 shrink-0 flex flex-wrap justify-between items-center text-[10px] sm:text-xs text-slate-400 z-10 shadow-[0_-10px_15px_rgba(0,0,0,0.3)]">
+                        <div class="flex flex-wrap items-center gap-2 mb-2 sm:mb-0 w-full sm:w-auto">
+                            <span class="bg-emerald-950/40 border border-emerald-800/50 text-emerald-400 px-3 py-1.5 rounded shadow-inner">
+                                คุณขุดสำเร็จ: <b id="lb-footer-user-blocks" class="text-white text-[11px] sm:text-sm ml-1">0</b> บล็อก
+                            </span>
+                            <span class="bg-amber-950/40 border border-amber-800/50 text-amber-400 px-3 py-1.5 rounded shadow-inner">
+                                ได้รับ Reward รวม: <b id="lb-footer-user-reward" class="text-white text-[11px] sm:text-sm ml-1">0.0000</b> BTC
+                            </span>
+                        </div>
+                        <div class="bg-rose-950/40 border border-rose-800/50 text-rose-400 px-3 py-1.5 rounded flex items-center gap-1.5 shadow-inner w-full sm:w-auto">
+                            <span class="animate-pulse text-sm">🚨</span> เครือข่ายแบนโหนดโกงไป: <b id="lb-footer-banned-nodes" class="text-white text-[11px] sm:text-sm">0</b> ตัว
+                        </div>
+                    </div>
+
                 </div>
             </div>`;
             document.body.insertAdjacentHTML('beforeend', modalHTML);
@@ -65,9 +83,17 @@ window.Leaderboard = {
     },
 
     calculateAndRender() {
+        this.lastRenderedHeight = window.STATE ? window.STATE.blockchain.length : 0;
+        this.lastRenderedBans = (window.STATE && window.STATE.bannedNodes) ? window.STATE.bannedNodes.size : 0;
+
         const historyBody = document.getElementById('lb-history-body');
         const top5Container = document.getElementById('lb-top5-container');
         const timeStatsEl = document.getElementById('lb-time-stats');
+        
+        // Element ของ Footer สถิติ
+        const footerUserBlocks = document.getElementById('lb-footer-user-blocks');
+        const footerUserReward = document.getElementById('lb-footer-user-reward');
+        const footerBannedNodes = document.getElementById('lb-footer-banned-nodes');
         
         if (!historyBody || !top5Container) return;
 
@@ -75,6 +101,9 @@ window.Leaderboard = {
         const historyRows = [];
         let sumTimeTaken = 0;
         let validMinedBlocks = 0;
+        
+        let userBlocksCount = 0;
+        let userTotalSats = 0;
 
         const extractTs = (timeStr) => {
             if (!timeStr) return null;
@@ -132,6 +161,12 @@ window.Leaderboard = {
                 }
                 minerStats[minerName].blocks++;
                 minerStats[minerName].totalReward += totalClaimed;
+                
+                // ตรวจจับสถิติของผู้เล่น (คุณ) เพื่อนำไปแสดงใน Footer
+                if (minerName.includes('คุณ')) {
+                    userBlocksCount++;
+                    userTotalSats += totalClaimed;
+                }
             }
 
             let rowBg = block.isCorrupted ? 'bg-rose-950/20 text-rose-400' : 'hover:bg-slate-800/50';
@@ -153,7 +188,6 @@ window.Leaderboard = {
             historyBody.innerHTML = historyRows.join('');
         }
 
-        // --- แก้บัค เปลี่ยนจาก ExpectedTime คำนวณตาม Diff เป็นโชว์ Target Time เป้าหมายจริงของเครือข่าย ---
         if (timeStatsEl) {
             // ระบบของเราตั้งเป้า (Target) ไว้ที่ 1 นาที เสมอ
             let targetStr = "60 วินาที (1 นาที)";
@@ -194,6 +228,20 @@ window.Leaderboard = {
                 </div>
             `).join('');
             top5Container.innerHTML = top5Html;
+        }
+
+        // อัปเดตสถิติย่อยลงใน Footer
+        if (footerUserBlocks) footerUserBlocks.innerText = userBlocksCount.toLocaleString();
+        
+        if (footerUserReward) {
+            let userBtc = (userTotalSats / 100000000).toFixed(4);
+            footerUserReward.innerText = userBtc;
+        }
+        
+        if (footerBannedNodes) {
+            // นับจำนวนโหนดทั้งหมดที่โดนแบนใน Network
+            let bannedCount = window.STATE && window.STATE.bannedNodes ? window.STATE.bannedNodes.size : 0;
+            footerBannedNodes.innerText = bannedCount.toLocaleString();
         }
     }
 };

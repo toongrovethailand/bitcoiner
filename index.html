@@ -148,7 +148,7 @@
 
 <div id="tour-dialog" class="fixed bottom-24 sm:bottom-28 left-1/2 transform -translate-x-1/2 z-[160] w-[90%] max-w-md bg-slate-900/80 border border-cyan-500/40 rounded-2xl shadow-[0_10px_40px_rgba(34,211,238,0.2)] p-5 hidden opacity-0 transition-all duration-500 translate-y-8">
     <div class="flex justify-between items-center mb-3 border-b border-slate-800/50 pb-3">
-        <span class="text-xs font-bold text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded border border-cyan-900/50">ขั้นตอนที่ <span id="tour-step-num">1</span>/12</span>
+        <span class="text-xs font-bold text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded border border-cyan-900/50">ขั้นตอนที่ <span id="tour-step-num">1</span>/9</span>
         <button onclick="App.endTour()" class="text-slate-500 hover:text-rose-400 transition-colors text-sm font-bold bg-slate-800/50 hover:bg-slate-700/80 px-2 py-1 rounded">✕ ปิดไกด์</button>
     </div>
     <h3 id="tour-title" class="text-white font-bold text-lg mb-2 drop-shadow-md">ยินดีต้อนรับสู่ Simulator!</h3>
@@ -197,6 +197,11 @@
 </div>
 
 <div class="fixed bottom-0 left-0 right-0 w-full z-[150] bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-slate-800 shadow-[0_-15px_30px_rgba(0,0,0,0.6)] pt-3 px-3 sm:px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+    
+    <button id="btn-sound-toggle" onclick="AudioEngine.toggleMute()" class="absolute -top-12 right-4 sm:right-6 bg-slate-800/80 text-slate-300 hover:text-white w-10 h-10 rounded-full flex items-center justify-center text-lg border border-slate-600/50 opacity-40 hover:opacity-100 transition-all shadow-lg backdrop-blur-md cursor-pointer z-[160]" title="เปิด/ปิดเสียง">
+        🔊
+    </button>
+
     <div class="max-w-[1400px] mx-auto grid grid-cols-2 lg:flex lg:flex-row gap-2 sm:gap-3">
         <button id="btn-mine" onclick="App.mineBlock()" class="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl border border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all cursor-pointer flex justify-center items-center gap-1.5">
             ⛏️ เริ่มขุด (PoW)

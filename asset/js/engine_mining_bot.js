@@ -253,6 +253,9 @@ Object.assign(window.Engine, {
             };
             STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = botHash;
 
+            // --- Event-Driven Update: สั่งอัปเดตสถิติ Leaderboard ทันทีที่มีการขุดสำเร็จ ---
+            if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
+
             const strip = document.getElementById('blockchain-strip-right');
             if(strip) { 
                 const el = document.createElement('div'); el.className = 'block-cube my-new-block flex-shrink-0 z-10'; 
