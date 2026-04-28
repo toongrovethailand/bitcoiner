@@ -112,6 +112,14 @@ var Utils = {
     sleep: ms => new Promise(r => setTimeout(r, ms)),
     generateHash: (prefix = "") => { let hash = prefix; while(hash.length < 64) hash += Math.random().toString(16).substring(2); return hash.substring(0, 64); },
     
+    // ฟังก์ชันคำนวณ Subsidy แบบเดียวกับ Validation ในบิตคอยน์
+    getSubsidyForHeight: (height) => {
+        const halvings = Math.floor(height / 210000);
+        if (halvings >= 64) return 0;
+        // ใช้ Math.floor แทน bitwise (>>) เพราะ JS Bitwise รับตัวเลขสูงสุดแค่ 32-bit (2.14 พันล้าน) ซึ่งจะเพี้ยนเมื่อเจอยอดตั้งต้น 5 พันล้าน
+        return Math.floor(5000000000 / Math.pow(2, halvings));
+    },
+
     sha256: function(ascii) {
         function rightRotate(value, amount) { return (value>>>amount) | (value<<(32 - amount)); };
         var mathPow = Math.pow; var maxWord = mathPow(2, 32); var result = ''; var words = []; var asciiBitLength = ascii.length*8;

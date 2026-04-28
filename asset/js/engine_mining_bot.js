@@ -47,7 +47,6 @@ Object.assign(window.Engine, {
                 let limit = STATE.nodeFrameLimits[botId] || 1;
                 let strat = STATE.nodeNonceStrategies[botId] || 'linear';
                 
-                // --- เพิ่มกำลังขุดให้ ASIC Boost สมชื่อความแรงฮาร์ดแวร์ ---
                 if (strat === 'asic') limit = Math.floor(limit * 1.2);
 
                 let headerBase = STATE.botBaseHeader[botId];
@@ -249,11 +248,18 @@ Object.assign(window.Engine, {
                 height: STATE.liveHeight + 1, hash: botHash, prevHash: STATE.prevHash, merkleRoot: Utils.generateHash(), 
                 version: "0x20000000", bits: `${mockBits} (Target ${diff} Zeros)`, 
                 nonce: winningNonce, nonceMethod: info.name, nonceEq: info.eq, 
-                time: timeStr, miner: `🤖 Bot ${botId.toUpperCase()}`, reward: `${botReward.toLocaleString()} sats`, transactions: botTxs, timeTaken: Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
+                time: timeStr, miner: `🤖 Bot ${botId.toUpperCase()}`, reward: `${botReward.toLocaleString()} sats`, transactions: botTxs, 
+                timeTaken: Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
             };
             STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = botHash;
+            
+            STATE.lastBlockTimeMs = Date.now();
 
-            // --- Event-Driven Update: สั่งอัปเดตสถิติ Leaderboard ทันทีที่มีการขุดสำเร็จ ---
+            // --- ระบบ Auto Subsidy Halving: คำนวณรางวัลใหม่หลังจากอัปเดตบล็อกล่าสุด ---
+            STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
+            const inputSub = document.getElementById('input-subsidy');
+            if (inputSub) inputSub.value = STATE.liveSubsidy;
+
             if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
 
             const strip = document.getElementById('blockchain-strip-right');

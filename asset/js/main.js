@@ -1,5 +1,5 @@
 window.App = {
-    init: () => { 
+    init: async () => { 
         const style = document.createElement('style');
         style.innerHTML = `@keyframes digAnim { 0% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-40deg) translateY(-3px); } 100% { transform: rotate(0deg) translateY(0); } } .mining-indicator { position: absolute; top: -10px; right: -10px; font-size: 11px; background: rgba(15, 23, 42, 0.95); border: 1px solid #f59e0b; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); z-index: 50; animation: digAnim 0.4s infinite; } .hash-minimized { position: fixed !important; bottom: 90px !important; right: 20px !important; width: 300px !important; transform: none !important; z-index: 300 !important; } @media (max-width: 640px) { .hash-minimized { bottom: 130px !important; right: 10px !important; width: 260px !important; } }`;
         document.head.appendChild(style);
@@ -10,6 +10,28 @@ window.App = {
                 if (ts) el.innerText = Utils.getTimeAgo(ts);
             });
         }, 5000);
+
+        // ดึงความสูงบล็อกปัจจุบันจากเครือข่าย Bitcoin ของจริง และคำนวณเงินรางวัลให้ตรงกับยุค
+        try {
+            const res = await Utils.fetchWithTimeout('https://mempool.space/api/blocks/tip/height', { timeout: 5000 });
+            if (res.ok) {
+                const heightStr = await res.text();
+                STATE.liveHeight = parseInt(heightStr);
+                
+                // คำนวณ Subsidy ตาม Block Height ปัจจุบัน
+                STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
+                
+                // อัปเดตช่องกรอกข้อมูล Subsidy หน้า UI ให้สอดคล้องกับยุค
+                const inputSub = document.getElementById('input-subsidy');
+                if (inputSub) inputSub.value = STATE.liveSubsidy;
+                
+                // อัปเดตแถบโชว์บล็อกล่าสุดด้านบน
+                const stripHeight = document.getElementById('strip-latest-height');
+                if (stripHeight) stripHeight.innerText = `#${STATE.liveHeight.toLocaleString()}`;
+            }
+        } catch (e) {
+            console.warn("ไม่สามารถซิงค์ Block Height จากเครือข่ายจริงได้ จะใช้ค่าพื้นฐานแทน", e);
+        }
 
         Engine.syncNetwork(); Engine.prepareNext(); 
     },
@@ -36,7 +58,7 @@ window.App = {
     abortMining: () => Engine.abortMining(), 
     minimizeMining: () => UI.minimizeMining(), 
     moveTx: (id, target) => { 
-        window.currentTemplateTier = null; // รีเซ็ตการล็อกปุ่ม หากมีการคลิกย้ายด้วยตัวเอง
+        window.currentTemplateTier = null; 
         const idxM = STATE.mempoolTxs.findIndex(t => t.id === id); 
         const idxB = STATE.blockTxs.findIndex(t => t.id === id); 
         if (target === 'block' && idxM > -1) { 
@@ -50,18 +72,15 @@ window.App = {
         UI.renderMempool(); 
     },
     autoFillFromMempool: () => {
-        // หาก Candidate Block ว่างเปล่า ให้เคลียร์สถานะเดิมทิ้งก่อน
         if (STATE.blockTxs.length === 0) {
             window.currentTemplateTier = null;
         }
 
-        // ห้ามกดซ้ำบล็อกเดิม
         if (window.currentTemplateTier === 'auto') {
             UI.showToast("คุณกำลังใช้โหมดดึงอัตโนมัติอยู่แล้ว!", "warning");
             return;
         }
 
-        // คืนธุรกรรมของจริง (ที่มาจาก Mempool) กลับลงไปก่อนที่จะเคลียร์
         STATE.blockTxs.filter(tx => !tx.isMock).forEach(tx => {
             if (!STATE.mempoolTxs.find(m => m.id === tx.id)) {
                 STATE.mempoolTxs.push(tx);
@@ -71,13 +90,11 @@ window.App = {
         STATE.blockTxs = [];
         window.currentTemplateTier = 'auto';
 
-        // 1. เรียงลำดับ Mempool ตาม satPerVb จากมากไปน้อย (Top Fee)
         STATE.mempoolTxs.sort((a, b) => b.satPerVb - a.satPerVb);
 
         let currentVb = 0;
         const txsToMove = [];
         
-        // 2. เลือกธุรกรรมเข้าบล็อกโดยไม่ให้เกินน้ำหนักสูงสุด
         for (let i = 0; i < STATE.mempoolTxs.length; i++) {
             let tx = STATE.mempoolTxs[i];
             if (currentVb + tx.vb <= CONFIG.MAX_BLOCK_VB && txsToMove.length < 20) {
@@ -86,7 +103,6 @@ window.App = {
             }
         }
 
-        // 3. นำธุรกรรมที่เลือกออกจาก Mempool แล้วใส่ Candidate Block
         txsToMove.forEach(tx => {
             const idx = STATE.mempoolTxs.findIndex(m => m.id === tx.id);
             if (idx > -1) STATE.mempoolTxs.splice(idx, 1);
@@ -106,7 +122,6 @@ window.App = {
             return;
         }
 
-        // คืนธุรกรรมของจริง (ที่มาจาก Mempool) กลับลงไปก่อน
         STATE.blockTxs.filter(tx => !tx.isMock).forEach(tx => {
             if (!STATE.mempoolTxs.find(m => m.id === tx.id)) {
                 STATE.mempoolTxs.push(tx);
@@ -133,7 +148,6 @@ window.App = {
             const finalSat = Math.max(1, targetSat + satVariance);
             const fee = Math.floor(vb * finalSat);
 
-            // เพิ่ม property isMock เพื่อให้รู้ว่าเป็นข้อมูลจำลอง จะได้ไม่โดนคืนลง Mempool จริง
             newTxs.push({ id, type: types[Math.floor(Math.random()*types.length)], fee, vb, satPerVb: finalSat, isMock: true });
             currentVb += vb;
         }

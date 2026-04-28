@@ -63,10 +63,9 @@ Object.assign(window.Engine, {
             <div class="text-slate-400 opacity-90 ml-2 mb-2 group relative w-max cursor-help z-50">└ <span class="text-white border-b border-dashed border-slate-500">Nonce Strategy:</span> [ ${info.name} : ${info.eq} ]</div>
             <div class="text-amber-400 font-bold mb-2">> Start SHA-256d Hashing (Real computation)...</div>`; 
             
-            // แก้บัคอาการหน่วงของ Scrollbar
             if (termModal) {
-                termModal.classList.remove('scroll-smooth'); // ปิดอนิเมชันให้ไหลทันที
-                termModal.scrollTop = termModal.scrollHeight; // เด้งลงล่างสุดตั้งแต่เริ่มต้น
+                termModal.classList.remove('scroll-smooth'); 
+                termModal.scrollTop = termModal.scrollHeight; 
             }
         }
         if(timerEl) timerEl.innerText = "00:00.00";
@@ -144,6 +143,8 @@ Object.assign(window.Engine, {
                 if (realHash.startsWith(target)) {
                     found = true; STATE.isMining = false; UI.toggleNodeMining('me', false); clearInterval(STATE.timerInterval); STATE.minedHash = realHash; STATE.minedNonce = nonce;
                     
+                    STATE.exactMiningTimeSec = Math.max(0, Math.floor((Date.now() - startT - totalPausedTime) / 1000));
+                    
                     const stratInfo = {
                         'linear': { name: "Sequential", eq: "Nonce++" },
                         'random': { name: "Stochastic", eq: "Random(0, 2^32-1)" },
@@ -183,7 +184,6 @@ Object.assign(window.Engine, {
                     logDiv.innerHTML = `<span class="text-slate-500">> Hashing (SHA256d)... Nonce: ${nonce}</span><br><span class="text-slate-300 opacity-50">${realHash}</span>`; 
                     outModal.appendChild(logDiv); 
                     while (outModal.children.length > 100) { outModal.removeChild(outModal.firstChild); } 
-                    // เลื่อนล่างสุดแบบ Instant ทุกเฟรมที่แสดงผล
                     if (termModal) termModal.scrollTop = termModal.scrollHeight; 
                 }
             }
@@ -270,11 +270,18 @@ Object.assign(window.Engine, {
                 height: STATE.liveHeight + 1, hash: STATE.minedHash, prevHash: STATE.prevHash, merkleRoot: STATE.merkleRoot, 
                 version: STATE.minedVersion, bits: `${mockBits} (Target ${diff} Zeros)`, 
                 nonce: STATE.minedNonce, nonceMethod: STATE.minedNonceMethod, nonceEq: STATE.minedNonceEq, 
-                time: finalTimeStr, miner: "คุณ (Simulator)", reward: `${totalClaimed.toLocaleString()} sats`, transactions: [...STATE.blockTxs], timeTaken: Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
+                time: finalTimeStr, miner: "คุณ (Simulator)", reward: `${totalClaimed.toLocaleString()} sats`, transactions: [...STATE.blockTxs], 
+                timeTaken: STATE.exactMiningTimeSec !== undefined ? STATE.exactMiningTimeSec : Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
             };
             STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = STATE.minedHash;
             
-            // --- Event-Driven Update: สั่งอัปเดตสถิติ Leaderboard ทันทีที่มีการขุดสำเร็จ ---
+            STATE.lastBlockTimeMs = Date.now();
+            
+            // --- ระบบ Auto Subsidy Halving: คำนวณรางวัลใหม่หลังจากอัปเดตบล็อกล่าสุด ---
+            STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
+            const inputSub = document.getElementById('input-subsidy');
+            if (inputSub) inputSub.value = STATE.liveSubsidy;
+
             if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
             
             const strip = document.getElementById('blockchain-strip-right');
