@@ -1,4 +1,4 @@
-🔥 ป้ายยาแรงๆ! อยากเข้าใจ Bitcoin แบบทะลุปรุโปร่ง ต้องลองเล่น "Bitcoin Solo LARP (Simulator)" เว็บจำลองการขุดและตรวจสอบบล็อกที่เจ๋งที่สุด!
+🔥 ป้ายยาแรงๆ! อยากเข้าใจ Bitcoin แบบทะลุปรุโปร่ง ต้องลองเล่น [ "[Bitcoin Solo LARP (Simulator](https://toongrovethailand.github.io/bitcoiner/index.html))"](https://toongrovethailand.github.io/bitcoiner/index.html) เว็บจำลองการขุดและตรวจสอบบล็อกที่เจ๋งที่สุด!
 
 ถ้าคุณเคยได้ยินคำว่า Proof of Work, Node, Merkle Tree หรือ Double Spending แล้วรู้สึกว่ามันเป็นเรื่องเทคนิคที่เข้าใจยาก ขอให้ลืมความซับซ้อนนั้นไปได้เลย! เพราะเว็บไซต์ Bitcoin Solo LARP 
 (สร้างแรงบันดาลใจจาก Right Shift) ได้ย่อโลกทั้งใบของเครือข่าย Bitcoin มาไว้บนหน้าจอของคุณแล้ว ในรูปแบบของ "เกมจำลองการเป็นนักขุดและผู้ตรวจสอบ" ที่ทั้งสนุก ภาพสวย และเข้าใจโคตรกง่าย!
