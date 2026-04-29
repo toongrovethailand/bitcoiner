@@ -179,7 +179,6 @@ Object.assign(window.Engine, {
                     return;
                 }
                 
-                // --- เอาการหน่วงวาดจอออก วิ่งเต็มสปีดตามเดิม ---
                 if (i === limit - 1 && outModal) { 
                     const logDiv = document.createElement('div'); logDiv.className = "mb-1 border-b border-slate-800/40 pb-1"; 
                     logDiv.innerHTML = `<span class="text-slate-500">> Hashing (SHA256d)... Nonce: ${nonce}</span><br><span class="text-slate-300 opacity-50">${realHash}</span>`; 
@@ -210,28 +209,46 @@ Object.assign(window.Engine, {
             const readyMsg = box.querySelector('.italic');
             if (readyMsg) readyMsg.remove();
         }
-        UI.addLiveNodeLog(`🚀 คุณ (Miner) เจอ Block: ส่งข้อความสะกิดเพื่อนบ้านรัวๆ...`, 'system');
+        
+        // --- อัปเดตสีรุ้ง: ประกาศคนเจอบล็อก ---
+        UI.addLiveNodeLog(`🚀 <span class="bg-gradient-to-r from-emerald-400 via-cyan-400 to-fuchsia-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs">คุณ (ME) ขุดพบ Block: เริ่มกระบวนการ Gossip Protocol ส่งข้อมูลให้โหนดรอบข้าง...</span>`, 'system');
         
         const myWaves = Utils.generateGossipWaves('me');
         for (const wave of myWaves) {
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-get'); el.classList.add('anim-packet-inv'); } });
-            wave.nodes.forEach(n => { let msg = getRandomChat('inv'); UI.showNodeChat(n, "📩 INV", "text-amber-400 border-amber-500/50"); UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()}: "${msg}"`, 'inv'); }); 
+            wave.nodes.forEach(n => { 
+                let msg = getRandomChat('inv'); 
+                let targetNode = `Node ${n.replace('nd-','').toUpperCase()}`;
+                UI.showNodeChat(n, "📩 INV", "text-amber-400 border-amber-500/50"); 
+                UI.addLiveNodeLog(`คุณ (ME) ➔ ${targetNode}: "${msg}"`, 'inv'); 
+            }); 
             await Utils.sleep(500); 
             
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-packet-inv'); el.classList.add('anim-packet-get'); } });
-            wave.nodes.forEach(n => { let msg = getRandomChat('getdata'); UI.showNodeChat(n, "📤 GET", "text-fuchsia-400 border-fuchsia-500/50"); const el = document.getElementById(n); if(el) el.classList.add('anim-node-verifying'); UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} -> คุณ: "${msg}"`, 'getdata'); }); 
+            wave.nodes.forEach(n => { 
+                let msg = getRandomChat('getdata'); 
+                let targetNode = `Node ${n.replace('nd-','').toUpperCase()}`;
+                UI.showNodeChat(n, "📤 GET", "text-fuchsia-400 border-fuchsia-500/50"); 
+                const el = document.getElementById(n); if(el) el.classList.add('anim-node-verifying'); 
+                UI.addLiveNodeLog(`${targetNode} ➔ คุณ (ME): "${msg}"`, 'getdata'); 
+            }); 
             await Utils.sleep(500); 
             
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-packet-get'); el.classList.add('anim-line-transmit'); } });
-            wave.nodes.forEach(n => { let msg = getRandomChat('block'); UI.showNodeChat(n, "📦 BLK", "text-cyan-400 border-cyan-500/50"); UI.addLiveNodeLog(`คุณ -> Node ${n.replace('nd-','').toUpperCase()}: "${msg}"`, 'block'); }); 
+            wave.nodes.forEach(n => { 
+                let msg = getRandomChat('block'); 
+                let targetNode = `Node ${n.replace('nd-','').toUpperCase()}`;
+                UI.showNodeChat(n, "📦 BLK", "text-cyan-400 border-cyan-500/50"); 
+                UI.addLiveNodeLog(`คุณ (ME) ➔ ${targetNode}: "${msg}"`, 'block'); 
+            }); 
             await Utils.sleep(500);
             
             wave.nodes.forEach(n => { 
+                let targetNode = `Node ${n.replace('nd-','').toUpperCase()}`;
                 const el = document.getElementById(n); if(el) { el.classList.remove('anim-node-verifying'); el.classList.add(isInvalid ? 'anim-node-fail' : 'anim-node-success'); } 
                 let msg = isInvalid ? getRandomChat('reject') : getRandomChat('accept');
                 UI.showNodeChat(n, isInvalid ? "🛡️ REJECT" : "✅ ACCEPTED", isInvalid ? "text-amber-400 border-amber-500/50" : "text-emerald-400 border-emerald-500/50"); 
-                const logAction = isInvalid ? "ปฏิเสธบล็อกและแบนโหนดคุณ" : "ตรวจสอบผ่านและยอมรับบล็อกของคุณ";
-                UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} ${logAction}: "${msg}"`, isInvalid ? "reject" : "accept");
+                UI.addLiveNodeLog(`${targetNode} ➔ คุณ (ME): "${msg}"`, isInvalid ? "reject" : "accept");
             });
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-transmit'); el.classList.add(isInvalid ? 'anim-line-fail' : 'anim-line-flow'); } });
             
@@ -287,6 +304,9 @@ Object.assign(window.Engine, {
             const strip = document.getElementById('blockchain-strip-right');
             if(strip) { const el = document.createElement('div'); el.className = 'block-cube my-new-block flex-shrink-0 z-10'; const curIdx = STATE.blockchain.length - 1; el.onclick = () => UI.showBlockDetails(curIdx); el.innerHTML = `<span class="text-cyan-400 font-bold text-lg sm:text-xl">#${STATE.liveHeight.toLocaleString()}</span><span class="text-slate-200 text-[10px] sm:text-xs mt-1 text-center leading-tight">Mined by<br>You</span><span class="text-emerald-400 text-[9px] mt-1 font-bold time-ago" data-ts="${now * 1000}">เพิ่งขุดเจอ</span>`; strip.insertBefore(el, strip.firstChild); while (strip.children.length > 4) { strip.removeChild(strip.children[strip.children.length - 3]); } }
             
+            // --- อัปเดตสีรุ้ง: ประกาศบันทึกลงเชน ---
+            UI.addLiveNodeLog(`🔥 <span class="bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs animate-pulse">เครือข่ายบันทึก Block #${STATE.liveHeight} ลงเชนเรียบร้อยแล้ว</span>`, 'system');
+
             this.evaluateDifficulty(); 
         }
         STATE.isBroadcasting = false; 
@@ -296,7 +316,6 @@ Object.assign(window.Engine, {
             const meEl = document.getElementById('nd-me'); if (meEl && !STATE.bannedNodes.has('me')) { meEl.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); }
             
             UI.toggleModal('log-modal', false); 
-            // --- BUG FIX: หยุดกระบวนการเริ่มบอทใหม่หากคุณถูกแบน ---
             if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) this.startBotsMining();
         }, 500); 
 

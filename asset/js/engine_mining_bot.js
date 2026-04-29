@@ -1,7 +1,6 @@
 window.Engine = window.Engine || {};
 Object.assign(window.Engine, {
     startBotsMining() {
-        // --- BUG FIX: ระงับการขุดของบอทหากผู้เล่นแพ้ (โดนแบน) หรือเชนพัง ---
         if (STATE.bannedNodes.has('me') || STATE.chainCorrupted) return;
 
         STATE.botStartTimers = STATE.botStartTimers || [];
@@ -28,7 +27,6 @@ Object.assign(window.Engine, {
         if (STATE.botMiningReq) cancelAnimationFrame(STATE.botMiningReq);
         
         const botLoop = () => {
-            // --- BUG FIX: ปิดลูปบอทถาวรหากปิดโหมดบอท ผู้เล่นโดนแบน หรือเชนพัง ---
             if (!STATE.isBotMode || STATE.bannedNodes.has('me') || STATE.chainCorrupted) {
                 return;
             }
@@ -127,8 +125,9 @@ Object.assign(window.Engine, {
         const maliciousTypes = ['oversize', 'badtime', 'doublespend', 'badsig', 'overclaim'];
         const mType = isMalicious ? maliciousTypes[Math.floor(Math.random() * maliciousTypes.length)] : null;
 
-        if (isMalicious) { UI.addLiveNodeLog(`🚨 [ATTACK] บอทแปลกปลอมจาก ${botName} พยายามส่งบล็อกผิดกฎเข้าสู่เครือข่าย!`, 'attack'); } 
-        else { UI.addLiveNodeLog(`🚨 บอทฟาร์มจาก ${botName} ขุดเจอบล็อก! เริ่มกระพือข่าวจากโหนดต้นทาง`, 'bot'); }
+        // --- อัปเดตสีรุ้ง: ประกาศคนเจอบล็อก ---
+        if (isMalicious) { UI.addLiveNodeLog(`🚨 [ATTACK] โหนด ${botName} พยายามส่งบล็อกผิดกฎเข้าสู่เครือข่าย!`, 'attack'); } 
+        else { UI.addLiveNodeLog(`🚨 <span class="bg-gradient-to-r from-fuchsia-400 via-amber-400 to-cyan-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs">โหนด ${botName} ขุดเจอบล็อก! เริ่มกระบวนการ Gossip Protocol...</span>`, 'system'); }
 
         const btnMine = document.getElementById('btn-mine');
         if (btnMine && document.getElementById('hash-modal') && !document.getElementById('hash-modal').classList.contains('opacity-0')) {
@@ -148,37 +147,45 @@ Object.assign(window.Engine, {
         const botWaves = Utils.generateGossipWaves(botId);
 
         for (const wave of botWaves) {
+            // 1. ส่ง INV
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-get'); el.classList.add('anim-packet-inv'); } });
             wave.nodes.forEach(n => { 
-                let msg = getRandomChat('inv'); UI.showNodeChat(n, "📩 INV", "text-amber-400 border-amber-500/50");
-                const name = n === 'nd-me' ? 'คุณ (Miner)' : `Node ${n.replace('nd-','').toUpperCase()}`; UI.addLiveNodeLog(`${name}: "${msg}"`, 'inv');
+                let msg = getRandomChat('inv'); 
+                let targetNode = n === 'nd-me' ? 'คุณ (ME)' : `Node ${n.replace('nd-','').toUpperCase()}`;
+                UI.showNodeChat(n, "📩 INV", "text-amber-400 border-amber-500/50");
+                UI.addLiveNodeLog(`${botName} ➔ ${targetNode}: "${msg}"`, 'inv');
             }); 
             await Utils.sleep(400); 
             
+            // 2. ตอบกลับ GETDATA
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-packet-inv'); el.classList.add('anim-packet-get'); } });
             wave.nodes.forEach(n => { 
-                let msg = getRandomChat('getdata'); UI.showNodeChat(n, "📤 GET", "text-fuchsia-400 border-fuchsia-500/50"); 
+                let msg = getRandomChat('getdata'); 
+                let targetNode = n === 'nd-me' ? 'คุณ (ME)' : `Node ${n.replace('nd-','').toUpperCase()}`;
+                UI.showNodeChat(n, "📤 GET", "text-fuchsia-400 border-fuchsia-500/50"); 
                 const el = document.getElementById(n); if(el && n !== 'nd-me') el.classList.add('anim-node-verifying'); 
-                if(n !== 'nd-me') UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()}: "${msg}"`, 'getdata');
+                UI.addLiveNodeLog(`${targetNode} ➔ ${botName}: "${msg}"`, 'getdata');
             }); 
             await Utils.sleep(400); 
             
+            // 3. ส่งข้อมูล BLOCK
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-packet-get'); el.classList.add('anim-line-transmit'); } });
             wave.nodes.forEach(n => { 
-                let msg = getRandomChat('block'); UI.showNodeChat(n, "📦 BLK", "text-cyan-400 border-cyan-500/50"); 
-                if(n !== 'nd-me') UI.addLiveNodeLog(`Network -> Node ${n.replace('nd-','').toUpperCase()}: "${msg}"`, 'block');
+                let msg = getRandomChat('block'); 
+                let targetNode = n === 'nd-me' ? 'คุณ (ME)' : `Node ${n.replace('nd-','').toUpperCase()}`;
+                UI.showNodeChat(n, "📦 BLK", "text-cyan-400 border-cyan-500/50"); 
+                UI.addLiveNodeLog(`${botName} ➔ ${targetNode}: "${msg}"`, 'block');
             }); 
             await Utils.sleep(400);
 
+            // 4. ตัดสิน ACCEPT / REJECT
             wave.nodes.forEach(n => { 
                 let msg = isMalicious ? getRandomChat('reject') : getRandomChat('accept');
+                let targetNode = n === 'nd-me' ? 'คุณ (ME)' : `Node ${n.replace('nd-','').toUpperCase()}`;
                 const el = document.getElementById(n); 
                 if(el && n !== 'nd-me') { el.classList.remove('anim-node-verifying'); el.classList.add(isMalicious ? 'anim-node-fail' : 'anim-node-success'); } 
                 UI.showNodeChat(n, isMalicious ? "🛡️ REJECT" : "✅ OK", isMalicious ? "text-amber-400 border-amber-500/50" : "text-emerald-400 border-emerald-500/50"); 
-                if(n !== 'nd-me') {
-                    if (isMalicious) { UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} ปฏิเสธบล็อกและแบนโหนด ${botId.toUpperCase()}: "${msg}"`, 'reject'); } 
-                    else { UI.addLiveNodeLog(`Node ${n.replace('nd-','').toUpperCase()} ตรวจสอบผ่านและยอมรับบล็อกของบอท: "${msg}"`, 'accept'); }
-                }
+                UI.addLiveNodeLog(`${targetNode} ➔ ${botName}: "${msg}"`, isMalicious ? 'reject' : 'accept');
             });
             
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-transmit'); el.classList.add(isMalicious ? 'anim-line-fail' : 'anim-line-flow'); } });
@@ -225,7 +232,6 @@ Object.assign(window.Engine, {
                 document.querySelectorAll('.net-link').forEach(l => { l.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-inv', 'anim-packet-get'); });
                 CONFIG.NODES.forEach(n => { const el = document.getElementById('nd-'+n); if(el && !STATE.bannedNodes.has(n)) el.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); });
                 UI.toggleModal('log-modal', false); 
-                // --- BUG FIX: หยุดกระบวนการเริ่มบอทใหม่หากคุณถูกแบน ---
                 if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) this.startBotsMining();
                 
                 if(STATE.isMining) {
@@ -279,7 +285,9 @@ Object.assign(window.Engine, {
             }
 
             UI.setHashDisplay('ui-prev-hash', STATE.prevHash);
-            UI.addLiveNodeLog(`🔥 เครือข่ายบันทึก Block #${STATE.liveHeight} ลงเชนเรียบร้อยแล้ว`, 'bot');
+            
+            // --- อัปเดตสีรุ้ง: ประกาศบันทึกลงเชน ---
+            UI.addLiveNodeLog(`🔥 <span class="bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs animate-pulse">เครือข่ายบันทึก Block #${STATE.liveHeight} ลงเชนเรียบร้อยแล้ว</span>`, 'system');
 
             STATE.isBroadcasting = false; 
 
@@ -322,7 +330,6 @@ Object.assign(window.Engine, {
                 document.querySelectorAll('.net-link').forEach(l => { l.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-inv', 'anim-packet-get'); });
                 CONFIG.NODES.forEach(n => { const el = document.getElementById('nd-'+n); if(el && !STATE.bannedNodes.has(n)) el.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); });
                 UI.toggleModal('log-modal', false); 
-                // --- BUG FIX: หยุดกระบวนการเริ่มบอทใหม่หากคุณถูกแบน ---
                 if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) this.startBotsMining();
             }, 500);
 

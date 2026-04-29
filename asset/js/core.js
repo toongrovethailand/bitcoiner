@@ -21,12 +21,13 @@ var CONFIG = {
     }
 };
 
+// ผสมผสานความสนุกเข้ากับความเข้าใจทางเทคนิค (Protocol + Humor)
 var P2P_DIALOG = {
-    inv: ["เฮ้ย มีบล็อกใหม่เว้ย เอาป่าว?", "เจอของดีละ ดึงไหม?", "มีอัปเดตเชน สนใจป่าว?", "มี Block ใหม่เพิ่งขุดเจอ โหลดไหม?", "เฮ้ย... มีของว่ะ บล็อกใหม่กริ๊บ", "บล็อกใหม่มาแล้วจ้า มียัง?", "เดี๋ยวหาว่าคุย เจอบล็อกใหม่อีกละ เอาป่ะ ?", "บล็อกใหม่ ๆ เลย มีรึยัง"],
-    getdata: ["จัดมาเลยลูกพี่!", "ขอดูหน่อยซิ ส่งมาๆ", "โหลดมาเลย พร้อมตรวจ!", "ส่งมาโลด รอดูอยู่!" , "ส่งมาซะดี ๆ รอดูอยู่!" , "ส่งมาดิ เอาหมด"],
-    block: ["รับไป 📦 ไฟล์หนักหน่อยนะ", "อ่ะ โหลดไปซะ!", "กำลังส่ง Block Data...", "โยนให้แล้ว ตรวจด้วย!" , "รบกวนตรวจสอบด้วยนะครับ" , "เอ้ารับ.."],
-    accept: ["ของแท้ ผ่าน!", "เรียบร้อย ลงเชน!", "ถูกต้องตามกฎเป๊ะ", "จัดไป บันทึกแล้ว!" , "แท้..ดูง่าย"],
-    reject: ["บล็อกปลอมนี่หว่า แบน!", "กฎไม่ผ่าน โดนเตะทิ้ง!", "เล่นตุกติกนี่ Reject!", "ข้อมูลมั่ว ขยะชัดๆ!" , "ไปคุยกับรากมะม่วงซะ!"]
+    inv: ["[INV] ก๊อกๆ มีบล็อกใหม่เพิ่งคลอด สนใจดึงไปตรวจไหม?", "[INV] ฮัลโหลลล มี Block ล่าสุดมาส่ง รับป่าว?", "[INV] เฮ้ยพวก! ขุดเจอของแรร์ (Block ใหม่) อัปเดตไหม?"],
+    getdata: ["[GETDATA] อุ๊ย! เช็คแล้วยังไม่มี ขอโหลด Raw Data หน่อยยย", "[GETDATA] จัดมาเลยลูกพี่! รอดูด Data อยู่เนี่ย", "[GETDATA] น่าสนๆ ส่งข้อมูลมาเต็มๆ เลยเดี๋ยวตรวจเอง!"],
+    block: ["[BLOCK] ระวังหัว! โยน Block Payload ขนาดเบิ้มให้แล้วนะ", "[BLOCK] ส่งของจ้าาา รับ Raw Data ไปตรวจซะดีๆ", "[BLOCK] โหลดไปโลด! ฝากตรวจสอบความถูกต้องด้วยนะวัยรุ่น"],
+    accept: ["[ACCEPTED] เนียนกริ๊บ! Consensus ผ่านฉลุย บันทึกลงเชนละ", "[ACCEPTED] ของแทร่! กฎเป๊ะเวอร์ ให้ผ่านแล้วกระจายต่อรัวๆ", "[ACCEPTED] ตรวจแล้ว ไม่มีหมกเม็ด Valid Block 100%!"],
+    reject: ["[REJECTED] โป๊ะแตก! จะมาเนียนผิดกฎ Consensus เหรอ แบนทิ้งซะ!", "[REJECTED] ข้อมูลขยะชัดๆ! โทษทีนะ ระบบเรารับแต่ของจริง", "[REJECTED] แหม... เล่นตุกติกนี่หว่า ตัดการเชื่อมต่อ ถีบออกจากวง!"]
 };
 
 var getRandomChat = (type) => P2P_DIALOG[type][Math.floor(Math.random() * P2P_DIALOG[type].length)];
@@ -41,7 +42,7 @@ var STATE = {
     botInterval: null, botStartTimers: [], txStreamInterval: null,
     isBroadcasting: false, isMining: false, 
     lastBlockTimeMs: Date.now(), bannedNodes: new Set(),
-    nodeHashOffsets: {} // ตัวแปรสำหรับเก็บค่าเปอร์เซ็นต์กำลังขุดที่เหลื่อมกัน
+    nodeHashOffsets: {}
 };
 
 var AudioEngine = {
@@ -112,11 +113,9 @@ var Utils = {
     sleep: ms => new Promise(r => setTimeout(r, ms)),
     generateHash: (prefix = "") => { let hash = prefix; while(hash.length < 64) hash += Math.random().toString(16).substring(2); return hash.substring(0, 64); },
     
-    // ฟังก์ชันคำนวณ Subsidy แบบเดียวกับ Validation ในบิตคอยน์
     getSubsidyForHeight: (height) => {
         const halvings = Math.floor(height / 210000);
         if (halvings >= 64) return 0;
-        // ใช้ Math.floor แทน bitwise (>>) เพราะ JS Bitwise รับตัวเลขสูงสุดแค่ 32-bit (2.14 พันล้าน) ซึ่งจะเพี้ยนเมื่อเจอยอดตั้งต้น 5 พันล้าน
         return Math.floor(5000000000 / Math.pow(2, halvings));
     },
 
