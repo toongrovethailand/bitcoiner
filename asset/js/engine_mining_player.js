@@ -179,6 +179,7 @@ Object.assign(window.Engine, {
                     return;
                 }
                 
+                // --- เอาการหน่วงวาดจอออก วิ่งเต็มสปีดตามเดิม ---
                 if (i === limit - 1 && outModal) { 
                     const logDiv = document.createElement('div'); logDiv.className = "mb-1 border-b border-slate-800/40 pb-1"; 
                     logDiv.innerHTML = `<span class="text-slate-500">> Hashing (SHA256d)... Nonce: ${nonce}</span><br><span class="text-slate-300 opacity-50">${realHash}</span>`; 
@@ -277,7 +278,6 @@ Object.assign(window.Engine, {
             
             STATE.lastBlockTimeMs = Date.now();
             
-            // --- ระบบ Auto Subsidy Halving: คำนวณรางวัลใหม่หลังจากอัปเดตบล็อกล่าสุด ---
             STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
             const inputSub = document.getElementById('input-subsidy');
             if (inputSub) inputSub.value = STATE.liveSubsidy;
@@ -296,7 +296,8 @@ Object.assign(window.Engine, {
             const meEl = document.getElementById('nd-me'); if (meEl && !STATE.bannedNodes.has('me')) { meEl.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); }
             
             UI.toggleModal('log-modal', false); 
-            if(STATE.isBotMode) this.startBotsMining();
+            // --- BUG FIX: หยุดกระบวนการเริ่มบอทใหม่หากคุณถูกแบน ---
+            if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) this.startBotsMining();
         }, 500); 
 
         setTimeout(() => this.prepareNext(false), 1000);

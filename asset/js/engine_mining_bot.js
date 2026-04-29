@@ -1,6 +1,9 @@
 window.Engine = window.Engine || {};
 Object.assign(window.Engine, {
     startBotsMining() {
+        // --- BUG FIX: ระงับการขุดของบอทหากผู้เล่นแพ้ (โดนแบน) หรือเชนพัง ---
+        if (STATE.bannedNodes.has('me') || STATE.chainCorrupted) return;
+
         STATE.botStartTimers = STATE.botStartTimers || [];
         STATE.botStartTimers.forEach(t => clearTimeout(t));
         STATE.botStartTimers = [];
@@ -25,9 +28,13 @@ Object.assign(window.Engine, {
         if (STATE.botMiningReq) cancelAnimationFrame(STATE.botMiningReq);
         
         const botLoop = () => {
-            const isBotOn = STATE.isBotMode;
-            if (!isBotOn || STATE.isBroadcasting) {
-                if(isBotOn) STATE.botMiningReq = requestAnimationFrame(botLoop);
+            // --- BUG FIX: ปิดลูปบอทถาวรหากปิดโหมดบอท ผู้เล่นโดนแบน หรือเชนพัง ---
+            if (!STATE.isBotMode || STATE.bannedNodes.has('me') || STATE.chainCorrupted) {
+                return;
+            }
+
+            if (STATE.isBroadcasting) {
+                STATE.botMiningReq = requestAnimationFrame(botLoop);
                 return;
             }
 
@@ -218,7 +225,9 @@ Object.assign(window.Engine, {
                 document.querySelectorAll('.net-link').forEach(l => { l.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-inv', 'anim-packet-get'); });
                 CONFIG.NODES.forEach(n => { const el = document.getElementById('nd-'+n); if(el && !STATE.bannedNodes.has(n)) el.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); });
                 UI.toggleModal('log-modal', false); 
-                if(STATE.isBotMode) this.startBotsMining();
+                // --- BUG FIX: หยุดกระบวนการเริ่มบอทใหม่หากคุณถูกแบน ---
+                if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) this.startBotsMining();
+                
                 if(STATE.isMining) {
                     UI.toggleNodeMining('me', true);
                     if (btnMine && document.getElementById('hash-modal') && document.getElementById('hash-modal').classList.contains('opacity-0')) {
@@ -255,7 +264,6 @@ Object.assign(window.Engine, {
             
             STATE.lastBlockTimeMs = Date.now();
 
-            // --- ระบบ Auto Subsidy Halving: คำนวณรางวัลใหม่หลังจากอัปเดตบล็อกล่าสุด ---
             STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
             const inputSub = document.getElementById('input-subsidy');
             if (inputSub) inputSub.value = STATE.liveSubsidy;
@@ -314,7 +322,8 @@ Object.assign(window.Engine, {
                 document.querySelectorAll('.net-link').forEach(l => { l.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-inv', 'anim-packet-get'); });
                 CONFIG.NODES.forEach(n => { const el = document.getElementById('nd-'+n); if(el && !STATE.bannedNodes.has(n)) el.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); });
                 UI.toggleModal('log-modal', false); 
-                if(STATE.isBotMode) this.startBotsMining();
+                // --- BUG FIX: หยุดกระบวนการเริ่มบอทใหม่หากคุณถูกแบน ---
+                if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) this.startBotsMining();
             }, 500);
 
             this.evaluateDifficulty(); 
