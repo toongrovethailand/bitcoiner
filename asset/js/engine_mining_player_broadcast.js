@@ -40,6 +40,43 @@ Object.assign(window.Engine, {
             UI.writeLog(`AcceptBlock: ยอมรับบล็อกเข้าสู่ระบบ`, "success");
             await Utils.sleep(200);
             UI.writeLog(`UpdateTip: อัปเดตยอดเชนใหม่ best=${Utils.shortenHash(STATE.minedHash)} ความสูง=${STATE.liveHeight + 1} ธุรกรรม=${STATE.blockTxs.length + 1} วันที่=${new Date().toISOString()}`, "final-success"); 
+            
+            // ==========================================
+            // นำการอัปเดตลง Blockchain มาไว้ตรงนี้ เพื่อให้พร้อมสำหรับการขุดใหม่ทันที
+            // ==========================================
+            if (typeof UI.shootFireworks === 'function') {
+                UI.shootFireworks();
+            }
+            UI.showToast(`🎉 เยี่ยมมาก! บล็อกของคุณถูกบันทึกลงเชนแล้ว (ได้รับ ${totalClaimed.toLocaleString()} sats)`, 'success');
+            
+            const d = new Date(parseInt(STATE.minedTimeRaw) * 1000); 
+            const finalTimeStr = `${STATE.minedTimeRaw} (${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')})`;
+            const finalBitsStr = STATE.minedBitsRaw;
+
+            const newBlock = { 
+                height: STATE.liveHeight + 1, hash: STATE.minedHash, prevHash: STATE.prevHash, merkleRoot: STATE.merkleRoot, 
+                version: STATE.minedVersion, bits: finalBitsStr, 
+                nonce: STATE.minedNonce, nonceMethod: STATE.minedNonceMethod, nonceEq: STATE.minedNonceEq, 
+                time: finalTimeStr, miner: "คุณ (Simulator)", reward: `${totalClaimed.toLocaleString()} sats`, transactions: [...STATE.blockTxs], 
+                timeTaken: STATE.exactMiningTimeSec !== undefined ? STATE.exactMiningTimeSec : Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
+            };
+            STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = STATE.minedHash;
+            
+            STATE.lastBlockTimeMs = Date.now();
+            
+            STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
+            const inputSub = document.getElementById('input-subsidy');
+            if (inputSub) inputSub.value = STATE.liveSubsidy;
+
+            if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
+            
+            const strip = document.getElementById('blockchain-strip-right');
+            if(strip) { const el = document.createElement('div'); el.className = 'block-cube my-new-block flex-shrink-0 z-10'; const curIdx = STATE.blockchain.length - 1; el.onclick = () => UI.showBlockDetails(curIdx); el.innerHTML = `<span class="text-cyan-400 font-bold text-lg sm:text-xl">#${STATE.liveHeight.toLocaleString()}</span><span class="text-slate-200 text-[10px] sm:text-xs mt-1 text-center leading-tight">Mined by<br>You</span><span class="text-emerald-400 text-[9px] mt-1 font-bold time-ago" data-ts="${Date.now()}">เพิ่งขุดเจอ</span>`; strip.insertBefore(el, strip.firstChild); while (strip.children.length > 4) { strip.removeChild(strip.children[strip.children.length - 3]); } }
+            
+            UI.addLiveNodeLog(`🔥 <span class="bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs animate-pulse">เครือข่ายบันทึก Block #${STATE.liveHeight} ลงเชนเรียบร้อยแล้ว</span>`, 'system');
+
+            this.evaluateDifficulty(); 
+
             await Utils.sleep(200);
             UI.writeLog(`Relaying: กำลังกระจายบล็อก ${Utils.shortenHash(STATE.minedHash)} ไปยังโหนดอื่น`, "process");
             AudioEngine.sfxFinalSuccess();
@@ -52,6 +89,8 @@ Object.assign(window.Engine, {
         UI.addLiveNodeLog(`🚀 <span class="bg-gradient-to-r from-emerald-400 via-cyan-400 to-fuchsia-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs">คุณ (ME) ขุดพบ Block: เริ่มกระบวนการ Gossip Protocol ส่งข้อมูลให้โหนดรอบข้าง...</span>`, 'system');
         
         const myWaves = Utils.generateGossipWaves('me');
+        let playerReleased = false;
+
         for (const wave of myWaves) {
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-get'); el.classList.add('anim-packet-inv'); } });
             wave.nodes.forEach(n => { 
@@ -90,6 +129,31 @@ Object.assign(window.Engine, {
             });
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-transmit'); el.classList.add(isInvalid ? 'anim-line-fail' : 'anim-line-flow'); } });
             
+            // ==========================================
+            // เมื่อโหนดรอบข้างบอกว่า ACCEPTED ให้หน่วงเวลา 1 วินาที
+            // แล้วเปิดปุ่มให้ผู้เล่นเริ่มขุดใหม่ต่อได้ทันที โดยไม่ต้องรอคลื่นอื่นจบ
+            // ==========================================
+            if (!isInvalid && !playerReleased) {
+                playerReleased = true;
+                setTimeout(() => {
+                    STATE.isBroadcasting = false; 
+                    this.prepareNext(false); // เคลียร์ UI เตรียมพร้อมให้ขุดใหม่
+                    
+                    // หากผู้เล่นเปิดโหมดขุดอัตโนมัติ ให้เริ่มดึงธุรกรรมและขุดใหม่เลย
+                    if (STATE.isAutoMiner && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) {
+                        STATE.manualFee = false;
+                        if (window.App && typeof window.App.autoFillFromMempool === 'function') {
+                            window.App.autoFillFromMempool();
+                        }
+                        setTimeout(() => {
+                            if (window.Engine && window.Engine.mine) {
+                                window.Engine.mine();
+                            }
+                        }, 500);
+                    }
+                }, 1000); // ดีเลย์ 1 วินาที (1000ms) ตามที่คุณระบุ
+            }
+
             if (isInvalid) { 
                 UI.banNode('me'); 
                 UI.addLiveNodeLog(`🚨 [NETWORK] โหนดคุณ (ME) ถูกเครือข่ายเตะออกจากระบบ!`, 'system'); 
@@ -148,7 +212,6 @@ Object.assign(window.Engine, {
                     };
 
                     btnNo.onclick = () => {
-                        // ปิดปุ่มทั้งสองเพื่อบังคับรับโทษ
                         btnYes.disabled = true;
                         btnNo.disabled = true;
                         btnYes.classList.add('opacity-50', 'cursor-not-allowed');
@@ -178,54 +241,23 @@ Object.assign(window.Engine, {
                 
                 if (window.UI && window.UI.unbanNode) window.UI.unbanNode('me');
                 
+                // คืนค่าระบบหลังถูกแบนเสร็จ
+                STATE.isBroadcasting = false;
+                this.prepareNext(false);
                 break; 
             }
         }
 
-        if (!failed && !isInvalid) {
-            if (typeof UI.shootFireworks === 'function') {
-                UI.shootFireworks();
-            }
-            UI.showToast(`🎉 เยี่ยมมาก! บล็อกของคุณถูกบันทึกลงเชนแล้ว (ได้รับ ${totalClaimed.toLocaleString()} sats)`, 'success');
-            
-            const d = new Date(parseInt(STATE.minedTimeRaw) * 1000); 
-            const finalTimeStr = `${STATE.minedTimeRaw} (${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')})`;
-            const finalBitsStr = STATE.minedBitsRaw;
-
-            const newBlock = { 
-                height: STATE.liveHeight + 1, hash: STATE.minedHash, prevHash: STATE.prevHash, merkleRoot: STATE.merkleRoot, 
-                version: STATE.minedVersion, bits: finalBitsStr, 
-                nonce: STATE.minedNonce, nonceMethod: STATE.minedNonceMethod, nonceEq: STATE.minedNonceEq, 
-                time: finalTimeStr, miner: "คุณ (Simulator)", reward: `${totalClaimed.toLocaleString()} sats`, transactions: [...STATE.blockTxs], 
-                timeTaken: STATE.exactMiningTimeSec !== undefined ? STATE.exactMiningTimeSec : Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
-            };
-            STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = STATE.minedHash;
-            
-            STATE.lastBlockTimeMs = Date.now();
-            
-            STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
-            const inputSub = document.getElementById('input-subsidy');
-            if (inputSub) inputSub.value = STATE.liveSubsidy;
-
-            if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
-            
-            const strip = document.getElementById('blockchain-strip-right');
-            if(strip) { const el = document.createElement('div'); el.className = 'block-cube my-new-block flex-shrink-0 z-10'; const curIdx = STATE.blockchain.length - 1; el.onclick = () => UI.showBlockDetails(curIdx); el.innerHTML = `<span class="text-cyan-400 font-bold text-lg sm:text-xl">#${STATE.liveHeight.toLocaleString()}</span><span class="text-slate-200 text-[10px] sm:text-xs mt-1 text-center leading-tight">Mined by<br>You</span><span class="text-emerald-400 text-[9px] mt-1 font-bold time-ago" data-ts="${Date.now()}">เพิ่งขุดเจอ</span>`; strip.insertBefore(el, strip.firstChild); while (strip.children.length > 4) { strip.removeChild(strip.children[strip.children.length - 3]); } }
-            
-            UI.addLiveNodeLog(`🔥 <span class="bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs animate-pulse">เครือข่ายบันทึก Block #${STATE.liveHeight} ลงเชนเรียบร้อยแล้ว</span>`, 'system');
-
-            this.evaluateDifficulty(); 
-        }
-
-        STATE.isBroadcasting = false; 
+        // เคลียร์แอนิเมชันตอนจบ
         setTimeout(() => {
             document.querySelectorAll('.net-link').forEach(l => { l.classList.remove('anim-line-flow', 'anim-line-fail', 'anim-line-transmit', 'anim-packet-inv', 'anim-packet-get'); });
             CONFIG.NODES.forEach(n => { const el = document.getElementById('nd-'+n); if(el && !STATE.bannedNodes.has(n)) el.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); });
             const meEl = document.getElementById('nd-me'); if (meEl && !STATE.bannedNodes.has('me')) { meEl.classList.remove('anim-node-success', 'anim-node-fail', 'anim-node-verifying'); }
             
-            if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) this.startBotsMining();
+            // สั่งบอทให้กลับมาขุดต่อ
+            if(STATE.isBotMode && !STATE.bannedNodes.has('me') && !STATE.chainCorrupted) {
+                this.startBotsMining();
+            }
         }, 500); 
-
-        setTimeout(() => this.prepareNext(false), 1000);
     }
 });
