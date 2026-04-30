@@ -50,7 +50,14 @@
                     <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">2. ความยาก (Target)</span>
                 </label>
                 <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
-                    <input type="number" id="input-difficulty" value="3" min="1" max="19" class="bg-transparent w-full text-cyan-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
+                    <input type="number" id="input-difficulty" value="4" min="4" max="19" class="bg-transparent w-full text-cyan-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none" 
+                    oninput="
+                        let z = parseInt(this.value) || 4;
+                        if(z < 4) { z = 4; this.value = 4; }
+                        let exp = 32 - Math.floor(z / 2);
+                        let coeff = (z % 2 !== 0) ? '0fffff' : 'ffffff';
+                        document.getElementById('ui-header-bits').innerText = '0x' + exp.toString(16) + coeff + ' (' + z + ' Zeros)';
+                    ">
                 </div>
             </div>
             
@@ -59,12 +66,22 @@
                     <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">3. กลยุทธ์ Nonce</span>
                 </label>
                 <div class="relative w-full h-[38px]">
-                    <select id="nonce-strategy-selector" class="w-full h-full bg-slate-950 border border-slate-700 text-emerald-400 hover:border-emerald-500/60 text-[11px] sm:text-xs font-bold font-mono rounded px-2 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer shadow-inner transition-colors" onchange="STATE.nodeNonceStrategies['me'] = this.value">
-                        <option value="linear">1. Sequential</option>
-                        <option value="random">2. Stochastic</option>
-                        <option value="asic">3. ASIC Boost</option>
-                        <option value="reverse">4. Decrement</option>
-                        <option value="evens">5. Evens Only</option>
+                    <select id="nonce-strategy-selector" class="w-full h-full bg-slate-950 border border-slate-700 text-emerald-400 hover:border-emerald-500/60 text-[11px] sm:text-xs font-bold font-mono rounded px-2 focus:outline-none focus:border-emerald-500 appearance-none cursor-pointer shadow-inner transition-colors" 
+                    onchange="
+                        STATE.nodeNonceStrategies['me'] = this.value;
+                        let startVal = '0';
+                        let eq = '(Nonce++)';
+                        if(this.value === 'reverse') { startVal = '4,294,967,295'; eq = '(Nonce--)'; }
+                        else if(this.value === 'random') { startVal = Math.floor(Math.random() * 4294967296).toLocaleString(); eq = '(Random)'; }
+                        else if(this.value === 'asic') { eq = '(Nonce+=7)'; }
+                        else if(this.value === 'evens') { eq = '(Nonce+=2)'; }
+                        document.getElementById('ui-header-nonce').innerText = startVal + ' ' + eq;
+                    ">
+                        <option value="linear">1. เรียงลำดับจากน้อยไปมาก</option>
+                        <option value="random">2. สุ่มตัวเลขใหม่ทุกครั้ง</option>
+                        <option value="asic">3. ข้ามทีละ 7 (ASIC Boost)</option>
+                        <option value="reverse">4. เรียงลำดับจากมากไปน้อย</option>
+                        <option value="evens">5. หาเฉพาะเลขคู่</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-emerald-500/70">▼</div>
                 </div>
@@ -75,7 +92,8 @@
                     <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">4. เคลมรายได้ (Subsidy)</span>
                 </label>
                 <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
-                    <input type="number" id="input-subsidy" value="312500000" step="1" class="bg-transparent w-full text-emerald-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
+                    <input type="number" id="input-subsidy" value="312500000" step="1" class="bg-transparent w-full text-emerald-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none"
+                    oninput="STATE.liveSubsidy = parseInt(this.value) || 0; if(window.UI && window.UI.renderMempool) window.UI.renderMempool();">
                 </div>
             </div>
 
@@ -84,7 +102,8 @@
                     <span class="truncate underline decoration-dashed decoration-slate-500/50 hover:decoration-current underline-offset-4">5. ค่าธรรมเนียม (Fee)</span>
                 </label>
                 <div class="flex items-center bg-slate-950 rounded border border-slate-700 px-3 h-[38px]">
-                    <input type="number" id="input-fee" value="0" step="1" class="bg-transparent w-full text-amber-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none">
+                    <input type="number" id="input-fee" value="0" step="1" class="bg-transparent w-full text-amber-400 text-center font-bold font-mono text-sm focus:outline-none appearance-none"
+                    oninput="STATE.actualFee = parseInt(this.value) || 0; STATE.manualFee = true; if(window.UI && window.UI.renderMempool) window.UI.renderMempool();">
                 </div>
             </div>
         </div>
@@ -110,23 +129,55 @@
     </div>
 
     <div id="tour-target-header" class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-inner flex flex-col gap-3 hover:border-fuchsia-500/30 transition-colors mt-2 relative z-10 shrink-0">
-        <p class="text-xs text-slate-500 font-bold uppercase tracking-wider absolute -top-2 left-4 bg-[#0a0a0a] px-2">Block Header Data</p>
+        <p class="text-[10px] sm:text-xs text-slate-500 font-bold uppercase tracking-wider absolute -top-2 left-4 bg-[#0a0a0a] px-2">Block Header Data (80 Bytes)</p>
         
         <div class="flex items-center justify-between mt-1">
-            <span class="text-sm text-slate-300 font-bold flex items-center gap-2">
-                <span class="text-fuchsia-400">🌳</span> Merkle Root:
+            <span class="text-[11px] sm:text-xs text-slate-400 font-bold flex items-center gap-2">
+                <span class="text-slate-500">📄</span> 1. Version:
+            </span>
+            <span class="font-mono text-[11px] sm:text-xs text-slate-300 w-2/3 text-right">0x20000000</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/50">
+            <span class="text-[11px] sm:text-xs text-slate-400 font-bold flex items-center gap-2">
+                <span class="text-slate-500">🔗</span> 2. Prev Hash:
+            </span>
+            <span class="font-mono text-[11px] sm:text-xs text-slate-400 block w-2/3 text-right cursor-pointer hover:text-slate-300 transition-colors truncate" id="ui-prev-hash" onclick="App.toggleHash(this)">Syncing...</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/50">
+            <span class="text-[11px] sm:text-xs text-slate-300 font-bold flex items-center gap-2">
+                <span class="text-fuchsia-400">🌳</span> 3. Merkle Root:
             </span>
             <div class="flex flex-col items-end w-2/3">
-                <span class="font-mono text-sm text-fuchsia-400 cursor-pointer hover:text-fuchsia-300 transition-colors" id="ui-merkle-root" onclick="App.toggleHash(this)">Empty</span>
+                <span class="font-mono text-[11px] sm:text-xs text-fuchsia-400 block w-full text-right cursor-pointer hover:text-fuchsia-300 transition-colors truncate" id="ui-merkle-root" onclick="App.toggleHash(this)">Empty</span>
                 <button onclick="App.openMerkleTree()" class="text-[10px] mt-1 bg-fuchsia-900/30 text-fuchsia-300 border border-fuchsia-500/30 px-2 py-0.5 rounded hover:bg-fuchsia-800/50 transition-colors flex items-center gap-1">🔍 ดูโครงสร้างรากไม้ (Tree)</button>
             </div>
         </div>
-        
+
         <div class="flex items-center justify-between pt-2 border-t border-slate-800/50">
-            <span class="text-sm text-slate-400 font-bold flex items-center gap-2">
-                <span class="text-slate-500">🔗</span> Prev Hash:
+            <span class="text-[11px] sm:text-xs text-slate-400 font-bold flex items-center gap-2">
+                <span class="text-slate-500">⏱️</span> 4. Timestamp:
             </span>
-            <span class="font-mono text-sm text-slate-400 w-2/3 text-right cursor-pointer hover:text-slate-300 transition-colors" id="ui-prev-hash" onclick="App.toggleHash(this)">Syncing...</span>
+            <span class="font-mono text-[11px] sm:text-xs text-slate-300 w-2/3 text-right" id="ui-header-timestamp">Loading...</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/50">
+            <span class="text-[11px] sm:text-xs text-slate-400 font-bold flex items-center gap-2">
+                <span class="text-amber-400">🎯</span> 5. Bits (Target):
+            </span>
+            <span class="font-mono text-[11px] sm:text-xs text-amber-400 w-2/3 text-right" id="ui-header-bits">0x1effffff (4 Zeros)</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800/50">
+            <span class="text-[11px] sm:text-xs text-slate-400 font-bold flex items-center gap-2">
+                <span class="text-emerald-400">🎲</span> 6. Nonce:
+            </span>
+            <span class="font-mono text-[11px] sm:text-xs text-emerald-400 w-2/3 text-right" id="ui-header-nonce">0 (Nonce++)</span>
+        </div>
+
+        <div class="mt-2 pt-2 border-t border-slate-800/50 text-[10px] text-slate-400 leading-relaxed font-sans bg-slate-950/50 p-2 rounded">
+            <span class="text-cyan-400 font-bold">💡 ข้อมูลแฝง:</span> <span class="text-amber-400 font-bold">ข้อ 4 (Subsidy)</span> และ <span class="text-amber-400 font-bold">ข้อ 5 (Fee)</span> จะไปรวมอยู่ใน <b class="text-white">Coinbase Transaction</b> ซึ่งจะถูกนำไป Hash รวมเป็นส่วนหนึ่งของ <span class="text-fuchsia-400 font-bold">3. Merkle Root</span> โดยอัตโนมัติ
         </div>
     </div>
 </div>

@@ -33,19 +33,6 @@
     </div>
 </div>
 
-<div id="log-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[300] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-    <div class="bg-[#0a0a0a] border border-slate-700 rounded-xl flex flex-col w-full max-w-3xl h-[70vh] shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content">
-        <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex justify-between items-center">
-            <span class="text-slate-400 font-mono text-sm font-bold flex items-center gap-2">💻 node_validation.log</span>
-            <button onclick="App.toggleModal('log-modal', false)" class="text-slate-400 hover:text-white text-sm font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded transition-colors">ปิด (Close)</button>
-        </div>
-        <div id="event-log" class="p-5 font-mono text-sm overflow-y-auto h-full space-y-2 text-slate-300 pb-10">
-            <div class="text-slate-500 mb-2">Bitcoin Core Daemon version v26.0.0</div>
-            <div class="text-cyan-600">> ระบบพร้อมทำงาน รอรับข้อมูล... <span class="animate-pulse">_</span></div>
-        </div>
-    </div>
-</div>
-
 <div id="genesis-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
     <div class="bg-[#0a0a0a] border border-amber-600/50 rounded-xl flex flex-col w-full max-w-2xl shadow-[0_0_50px_rgba(245,158,11,0.2)] overflow-hidden transform scale-95 transition-transform duration-300 modal-content">
         <div class="bg-amber-950/40 px-4 py-3 border-b border-amber-800/50 flex justify-between items-center">
@@ -206,9 +193,14 @@
         <button id="btn-mine" onclick="App.mineBlock()" class="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl border border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all cursor-pointer flex justify-center items-center gap-1.5">
             ⛏️ เริ่มขุด (PoW)
         </button>
-        <button onclick="App.toggleModal('log-modal', true)" class="flex-1 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-slate-300 text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all border border-slate-700 shadow flex justify-center items-center gap-1.5">
-            📜 ดู Log
+        
+        <button id="btn-auto-mine" onclick="Engine.toggleAutoMine()" class="flex-1 bg-gradient-to-r from-slate-800 to-cyan-950 hover:from-slate-700 hover:to-cyan-900 text-cyan-300 text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all duration-300 border border-cyan-800/60 hover:border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] flex justify-center items-center gap-2 relative overflow-hidden group">
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
+    <span class="relative z-10 group-hover:animate-bounce">⚡</span>
+    <span class="relative z-10 tracking-wide">โหมดขุดอัตโนมัติ</span>
+    <span class="relative z-10 text-[9px] bg-cyan-500/20 border border-cyan-500/50 px-1.5 py-0.5 rounded-full ml-1 text-cyan-100 uppercase tracking-widest shadow-[0_0_5px_rgba(6,182,212,0.5)]">Auto</span>
         </button>
+
         <button id="btn-leaderboard" onclick="window.Leaderboard.show()" class="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all border border-amber-400/30 shadow-[0_0_15px_rgba(245,158,11,0.3)] flex justify-center items-center gap-1.5">
             🏆 สถิติ
         </button>
@@ -218,76 +210,15 @@
         <button onclick="App.startTour()" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all border border-indigo-400/30 shadow-[0_0_15px_rgba(99,102,241,0.3)] flex justify-center items-center gap-1.5">
             💡 สอนวิธีเล่น
         </button>
-        <button id="btn-bot-mode" onclick="App.toggleBotMode()" class="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all border border-violet-400/30 shadow-[0_0_15px_rgba(139,92,246,0.3)] flex justify-center items-center gap-1.5">
-            ⚔️ โหมดท้าทาย
+        <button id="btn-bot-mode" onclick="Engine.toggleBotMode()" class="flex-1 bg-gradient-to-r from-slate-800 to-fuchsia-950 hover:from-slate-700 hover:to-fuchsia-900 text-fuchsia-300 text-sm sm:text-base font-bold py-3 sm:py-3.5 rounded-xl transition-all duration-300 border border-fuchsia-800/60 hover:border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.15)] hover:shadow-[0_0_20px_rgba(217,70,239,0.3)] flex justify-center items-center gap-2 relative overflow-hidden group">
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-fuchsia-400/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></div>
+    <span class="relative z-10 group-hover:animate-bounce">⚔️</span>
+    <span class="relative z-10 tracking-wide">โหมดท้าทาย</span>
+    <span class="relative z-10 text-[9px] bg-fuchsia-500/20 border border-fuchsia-500/50 px-1.5 py-0.5 rounded-full ml-1 text-fuchsia-100 uppercase tracking-widest shadow-[0_0_5px_rgba(217,70,239,0.5)]">Bot</span>
         </button>
     </div>
 </div>
 
-<script>
-    Promise.all([
-        fetch('mempool.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ mempool.html'); return res.text(); }),
-        fetch('miner.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ miner.html'); return res.text(); }),
-        fetch('validator.html').then(res => { if(!res.ok) throw new Error('ไม่พบไฟล์ validator.html'); return res.text(); }),
-        fetch('modal_difficulty.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_nonce.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_subsidy.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_fee.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_mempool.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_miner.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_validator.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_tx_sort.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_block_size.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_p2p_network.html').then(res => res.ok ? res.text() : ''),
-        fetch('modal_p2p_gossip.html').then(res => res.ok ? res.text() : '')
-    ]).then(([p1, p2, p3, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11]) => {
-        
-        document.getElementById('part1-mempool').innerHTML = p1;
-        document.getElementById('part2-miner').innerHTML = p2;
-        document.getElementById('part3-validator').innerHTML = p3;
-        
-        // แทรก Modals ทั้งหมดลงไปใน Body
-        document.body.insertAdjacentHTML('beforeend', m1 + m2 + m3 + m4 + m5 + m6 + m7 + m8 + m9 + m10 + m11);
-
-        const loadScript = (src) => new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = () => reject(new Error(`โหลดไฟล์ ${src} ไม่สำเร็จ`));
-            document.body.appendChild(script);
-        });
-
-        return loadScript('./asset/js/core.js')
-            .then(() => loadScript('./asset/js/ui_tour.js'))
-            .then(() => loadScript('./asset/js/ui_core_base.js'))
-            .then(() => loadScript('./asset/js/ui_core_blockchain_details.js'))
-            .then(() => loadScript('./asset/js/ui_core_blockchain_mempool.js'))
-            .then(() => loadScript('./asset/js/ui_leaderboard.js'))
-            .then(() => loadScript('./asset/js/modal_logic.js'))
-            .then(() => loadScript('./asset/js/engine_core.js'))
-            .then(() => loadScript('./asset/js/engine_mining_bot.js'))
-            .then(() => loadScript('./asset/js/engine_mining_player.js'))
-            .then(() => loadScript('./asset/js/main.js'));
-
-    }).then(() => {
-        if (typeof App !== 'undefined') {
-            App.init(); 
-            
-            if (sessionStorage.getItem('skipWelcome') !== 'true') { 
-                const welcomeModal = document.getElementById('welcome-modal'); 
-                if (welcomeModal) { 
-                    welcomeModal.classList.remove('hidden'); 
-                    setTimeout(() => { welcomeModal.classList.remove('opacity-0'); }, 50); 
-                } 
-            } 
-        }
-    }).catch(err => {
-        console.error("เกิดข้อผิดพลาด:", err);
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); background:rgba(225,29,72,0.9); color:white; padding:15px 30px; border-radius:10px; z-index:9999; font-weight:bold;";
-        errorDiv.innerHTML = `⚠️ <b>Error Loading:</b> ${err.message}<br><span style="font-size:12px; font-weight:normal;">เช็คการตั้งชื่อและ Path ของไฟล์ให้ถูกต้อง</span>`;
-        document.body.appendChild(errorDiv);
-    });
-</script>
+<script src="./asset/js/init.js"></script>
 </body>
 </html>
