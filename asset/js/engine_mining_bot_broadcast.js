@@ -54,7 +54,8 @@ Object.assign(window.Engine, {
         let blockAccepted = false;
         let isRejectedByMe = false;
         
-        // ตัวแปรสำหรับจับจังหวะให้ผู้เล่นเริ่มขุดต่อได้ทันทีหลังแสดงแอนิเมชัน
+        // ตัวแปรสำหรับจับจังหวะให้โชว์บล็อกและผู้เล่นเริ่มขุดต่อได้ทันทีหลังแสดงแอนิเมชัน OK
+        let readyToUpdateChain = false;
         let meNeedsRestart = false;
         let meNeedsResume = false;
 
@@ -113,52 +114,7 @@ Object.assign(window.Engine, {
                     meNeedsRestart = true; // เตรียมเคลียร์คิวและเริ่มขุดใหม่
                     UI.writeLog(`UpdateTip: อัปเดตยอดเชนใหม่ best=${Utils.shortenHash(botHash)} ความสูง=${STATE.liveHeight + 1} ธุรกรรม=${botTxs.length + 1} วันที่=${new Date().toISOString()}`, "final-success"); 
                     AudioEngine.sfxFinalSuccess();
-
-                    botTxs.forEach(btx => {
-                        const mIdx = STATE.mempoolTxs.findIndex(t => t.id === btx.id); if (mIdx > -1) STATE.mempoolTxs.splice(mIdx, 1);
-                        const bIdx = STATE.blockTxs.findIndex(t => t.id === btx.id); if (bIdx > -1) { STATE.blockTxs.splice(bIdx, 1); userAffected = true; }
-                    });
-
-                    const rawBotTime = STATE.botTimes[botId];
-                    const d = new Date(parseInt(rawBotTime) * 1000);
-                    const finalTimeStr = `${rawBotTime} (${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')})`;
-                    const finalBitsStr = STATE.botBits[botId];
-
-                    const newBlock = { 
-                        height: STATE.liveHeight + 1, hash: botHash, prevHash: STATE.prevHash, merkleRoot: Utils.generateHash(), 
-                        version: "0x20000000", bits: finalBitsStr, 
-                        nonce: winningNonce, nonceMethod: info.name, nonceEq: info.eq, 
-                        time: finalTimeStr, miner: `🤖 Bot ${botId.toUpperCase()}`, reward: `${botReward.toLocaleString()} sats`, transactions: botTxs, 
-                        timeTaken: Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
-                    };
-                    STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = botHash;
-                    
-                    STATE.lastBlockTimeMs = Date.now();
-                    STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
-                    const inputSub = document.getElementById('input-subsidy');
-                    if (inputSub) inputSub.value = STATE.liveSubsidy;
-
-                    if (STATE.nodeUnbanHeight) {
-                        for (let nid in STATE.nodeUnbanHeight) {
-                            if (STATE.liveHeight >= STATE.nodeUnbanHeight[nid]) {
-                                if (window.UI && window.UI.unbanNode) window.UI.unbanNode(nid);
-                                delete STATE.nodeUnbanHeight[nid];
-                            }
-                        }
-                    }
-
-                    if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
-
-                    const strip = document.getElementById('blockchain-strip-right');
-                    if(strip) { 
-                        const el = document.createElement('div'); el.className = 'block-cube my-new-block flex-shrink-0 z-10'; 
-                        const curIdx = STATE.blockchain.length - 1; el.onclick = () => UI.showBlockDetails(curIdx); 
-                        el.innerHTML = `<span class="text-cyan-400 font-bold text-lg sm:text-xl">#${STATE.liveHeight.toLocaleString()}</span><span class="text-slate-200 text-[10px] sm:text-xs mt-1 text-center leading-tight">Mined by<br>Bot ${botId.toUpperCase()}</span><span class="text-emerald-400 text-[9px] mt-1 font-bold time-ago" data-ts="${Date.now()}">เพิ่งขุดเจอ</span>`; 
-                        strip.insertBefore(el, strip.firstChild); while (strip.children.length > 4) { strip.removeChild(strip.children[strip.children.length - 3]); } 
-                    }
-
-                    UI.setHashDisplay('ui-prev-hash', STATE.prevHash);
-                    UI.addLiveNodeLog(`🔥 <span class="bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs animate-pulse">เครือข่ายบันทึก Block #${STATE.liveHeight} ลงเชนเรียบร้อยแล้ว</span>`, 'system');
+                    readyToUpdateChain = true; // เตรียมสร้างบล็อกให้โชว์พร้อมจังหวะแชท OK
                 }
                 
                 await Utils.sleep(1500);
@@ -179,7 +135,61 @@ Object.assign(window.Engine, {
             wave.lines.forEach(l => { const el = document.getElementById(l); if(el) { el.classList.remove('anim-line-transmit'); el.classList.add(isMalicious ? 'anim-line-fail' : 'anim-line-flow'); } });
 
             // ==========================================
-            // ให้ผู้เล่นเริ่มดำเนินการต่อได้ทันที หลังจาก "โหนดผู้เล่น (ME)" แสดง Bubble แชทเรียบร้อยแล้ว
+            // อัปเดต Blockchain & สร้าง Block Cube เข้าหน้าจอ
+            // จังหวะเดียวกับที่โหนดผู้เล่นพูดว่า OK พอดีเป๊ะ
+            // ==========================================
+            if (readyToUpdateChain) {
+                readyToUpdateChain = false;
+
+                botTxs.forEach(btx => {
+                    const mIdx = STATE.mempoolTxs.findIndex(t => t.id === btx.id); if (mIdx > -1) STATE.mempoolTxs.splice(mIdx, 1);
+                    const bIdx = STATE.blockTxs.findIndex(t => t.id === btx.id); if (bIdx > -1) { STATE.blockTxs.splice(bIdx, 1); userAffected = true; }
+                });
+
+                const rawBotTime = STATE.botTimes[botId];
+                const d = new Date(parseInt(rawBotTime) * 1000);
+                const finalTimeStr = `${rawBotTime} (${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')})`;
+                const finalBitsStr = STATE.botBits[botId];
+
+                const newBlock = { 
+                    height: STATE.liveHeight + 1, hash: botHash, prevHash: STATE.prevHash, merkleRoot: Utils.generateHash(), 
+                    version: "0x20000000", bits: finalBitsStr, 
+                    nonce: winningNonce, nonceMethod: info.name, nonceEq: info.eq, 
+                    time: finalTimeStr, miner: `🤖 Bot ${botId.toUpperCase()}`, reward: `${botReward.toLocaleString()} sats`, transactions: botTxs, 
+                    timeTaken: Math.max(0, Math.floor((Date.now() - STATE.lastBlockTimeMs) / 1000)) 
+                };
+                STATE.blockchain.push(newBlock); STATE.liveHeight++; STATE.prevHash = botHash;
+                
+                STATE.lastBlockTimeMs = Date.now();
+                STATE.liveSubsidy = Utils.getSubsidyForHeight(STATE.liveHeight);
+                const inputSub = document.getElementById('input-subsidy');
+                if (inputSub) inputSub.value = STATE.liveSubsidy;
+
+                if (STATE.nodeUnbanHeight) {
+                    for (let nid in STATE.nodeUnbanHeight) {
+                        if (STATE.liveHeight >= STATE.nodeUnbanHeight[nid]) {
+                            if (window.UI && window.UI.unbanNode) window.UI.unbanNode(nid);
+                            delete STATE.nodeUnbanHeight[nid];
+                        }
+                    }
+                }
+
+                if (window.Leaderboard && window.Leaderboard.calculateAndRender) window.Leaderboard.calculateAndRender();
+
+                const strip = document.getElementById('blockchain-strip-right');
+                if(strip) { 
+                    const el = document.createElement('div'); el.className = 'block-cube my-new-block flex-shrink-0 z-10'; 
+                    const curIdx = STATE.blockchain.length - 1; el.onclick = () => UI.showBlockDetails(curIdx); 
+                    el.innerHTML = `<span class="text-cyan-400 font-bold text-lg sm:text-xl">#${STATE.liveHeight.toLocaleString()}</span><span class="text-slate-200 text-[10px] sm:text-xs mt-1 text-center leading-tight">Mined by<br>Bot ${botId.toUpperCase()}</span><span class="text-emerald-400 text-[9px] mt-1 font-bold time-ago" data-ts="${Date.now()}">เพิ่งขุดเจอ</span>`; 
+                    strip.insertBefore(el, strip.firstChild); while (strip.children.length > 4) { strip.removeChild(strip.children[strip.children.length - 3]); } 
+                }
+
+                UI.setHashDisplay('ui-prev-hash', STATE.prevHash);
+                UI.addLiveNodeLog(`🔥 <span class="bg-gradient-to-r from-rose-400 via-amber-400 to-emerald-400 text-transparent bg-clip-text font-extrabold text-[11px] sm:text-xs animate-pulse">เครือข่ายบันทึก Block #${STATE.liveHeight} ลงเชนเรียบร้อยแล้ว</span>`, 'system');
+            }
+
+            // ==========================================
+            // ให้ผู้เล่นเริ่มดำเนินการต่อได้ทันที หลังจาก "โหนดผู้เล่น (ME)" แสดงแชท Bubble เรียบร้อยแล้ว
             // โดยไม่ต้องรอโหนดอื่นๆ ซุบซิบให้จบ
             // ==========================================
             if (meNeedsRestart) {
@@ -199,7 +209,7 @@ Object.assign(window.Engine, {
                     const termModal = document.getElementById('hash-terminal-modal');
                     const outModal = document.getElementById('hash-output-modal');
                     if (outModal) {
-                        outModal.innerHTML += `<div class="text-rose-500 mt-3 font-bold px-2 py-2 bg-rose-950/80 border border-rose-900 rounded shadow-md">🚨 [STALE BLOCK]<br>เครือข่ายรับบล็อกใหม่จากบอทแล้ว! ข้อมูลของคุณล้าสมัย ระบบได้ยกเลิกการขุดและกำลังเริ่มขุดบล็อกใหม่ในอีก 2 วินาที...</div>`;
+                        outModal.innerHTML += `<div class="text-rose-500 mt-3 font-bold px-2 py-2 bg-rose-950/80 border border-rose-900 rounded shadow-md">🚨 [STALE BLOCK]<br>เครือข่ายรับบล็อกใหม่จากบอทแล้ว! ข้อมูลของคุณล้าสมัย ระบบได้ยกเลิกการขุดและกำลังเริ่มขุดบล็อกใหม่...</div>`;
                         if (termModal) termModal.scrollTop = termModal.scrollHeight;
                     }
                     
@@ -210,12 +220,12 @@ Object.assign(window.Engine, {
                         window.App.autoFillFromMempool();
                     }
 
-                    // สั่งให้เริ่มขุดบล็อกใหม่หลังจากดีเลย์ 2 วินาที
+                    // สั่งให้เริ่มขุดบล็อกใหม่ทันที
                     setTimeout(() => {
                         if (window.Engine && window.Engine.mine) {
                             window.Engine.mine();
                         }
-                    }, 2000);
+                    }, 500);
 
                 } else if (userAffected) {
                     UI.showToast("🤖 เครือข่ายอัปเดตบล็อกใหม่! ข้อมูลที่คุณเตรียมขุดล้าสมัยแล้ว โปรดจัดเรียงใหม่", "error");
@@ -255,6 +265,7 @@ Object.assign(window.Engine, {
         await Utils.sleep(500);
 
         if (!logHasRun) {
+            // กรณีที่โหนดของคุณไม่ได้รับผลกระทบจาก Gossip (เช่น โดนแบน หรือหลุด)
             if (!isMalicious) {
                 blockAccepted = true;
                 botTxs.forEach(btx => {
@@ -307,7 +318,6 @@ Object.assign(window.Engine, {
 
         STATE.isBroadcasting = false; 
 
-        // กรณีที่ผู้เล่นไม่ได้รับบล็อกจาก Wave P2P เลย (อาจเพราะหลุดจากเครือข่าย)
         if (wasMining && !logHasRun && (isMalicious || isRejectedByMe)) {
             UI.toggleNodeMining('me', true);
         }
