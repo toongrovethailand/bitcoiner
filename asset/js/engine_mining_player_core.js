@@ -1,14 +1,7 @@
 window.Engine = window.Engine || {};
 Object.assign(window.Engine, {
     async toggleAutoMine(skipPrompt = false) {
-        if (!STATE.isAutoMiner && !STATE.isBotMode && !skipPrompt) {
-            const wantBoth = await (window.Engine.askCrossMode ? window.Engine.askCrossMode("คุณกำลังเริ่มการจำลองแบบอัตโนมัติ") : Promise.resolve(false));
-            if (wantBoth) {
-                this.executeToggleAutoMine();
-                if (window.Engine && window.Engine.toggleBotMode) window.Engine.toggleBotMode(true);
-                return;
-            }
-        }
+        // ให้ทำงานทันที ไม่ต้องมีเงื่อนไขถาม
         this.executeToggleAutoMine();
     },
 
@@ -60,6 +53,16 @@ Object.assign(window.Engine, {
         STATE.autoMinerTimeout = setTimeout(() => this.runAutoMiner(), 3000);
     },
     abortMining() {
+        // เช็คว่าเป็นการคลิกจากปุ่มยกเลิกจริงๆ เท่านั้น (ปุ่มที่มีคำว่า "ยกเลิก")
+        let isCancelBtn = window.event && window.event.target && 
+            (window.event.target.innerText.includes('ยกเลิก') || 
+            (window.event.target.closest && window.event.target.closest('button') && window.event.target.closest('button').innerText.includes('ยกเลิก')));
+        
+        // หากโหมดขุดอัตโนมัติเปิดอยู่ และผู้ใช้กดปุ่มยกเลิก ให้ปิดโหมดอัตโนมัติด้วย
+        if (isCancelBtn && STATE.isAutoMiner) {
+            this.executeToggleAutoMine();
+        }
+
         if(STATE.miningReq) cancelAnimationFrame(STATE.miningReq);
         if(STATE.timerInterval) clearInterval(STATE.timerInterval);
         STATE.isMining = false; STATE.minedHash = ""; STATE.minedNonce = 0; 

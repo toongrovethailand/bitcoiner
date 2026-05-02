@@ -59,47 +59,8 @@ Object.assign(window.Engine, {
         
         this.prepareNext(true);
     },
-    
-    askCrossMode(questionHTML) {
-        return new Promise(resolve => {
-            const html = `
-                <div id="cross-mode-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[600] flex items-center justify-center p-4 transition-opacity duration-300">
-                    <div class="bg-[#050B14] border border-cyan-600/50 rounded-xl flex flex-col w-full max-w-sm shadow-[0_0_50px_rgba(6,182,212,0.2)] overflow-hidden transform scale-100 transition-transform duration-300">
-                        <div class="bg-cyan-950/80 px-4 py-4 border-b border-cyan-800/50 flex justify-center items-center text-center">
-                            <span class="text-cyan-400 font-bold flex items-center gap-2 text-base sm:text-lg">⚙️ เปิดใช้งานระบบขุดอัตโนมัติทั้งคุณและบอท ?</span>
-                        </div>
-                        <div class="p-6 font-sans text-sm text-slate-300 text-center space-y-4">
-                            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed" id="cross-mode-question"></p>
-                            <div class="flex gap-3 justify-center pt-2">
-                                <button id="btn-cross-yes" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-6 rounded-lg shadow transition-all w-full border border-emerald-500/50 hover:border-emerald-400">ใช่</button>
-                                <button id="btn-cross-no" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold py-2.5 px-6 rounded-lg border border-slate-700 hover:border-slate-500 transition-all w-full">ไม่</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', html);
-            document.getElementById('cross-mode-question').innerHTML = questionHTML;
-            document.getElementById('btn-cross-yes').onclick = () => {
-                document.getElementById('cross-mode-modal').remove();
-                resolve(true);
-            };
-            document.getElementById('btn-cross-no').onclick = () => {
-                document.getElementById('cross-mode-modal').remove();
-                resolve(false);
-            };
-        });
-    },
 
     async toggleBotMode(skipPrompt = false) {
-        if (!STATE.isBotMode && !STATE.isAutoMiner && !skipPrompt) {
-            const wantBoth = await this.askCrossMode("คุณกำลังเริ่มการจำลองแบบอัตโนมัติ");
-            if (wantBoth) {
-                this.executeToggleBotMode();
-                if (window.Engine && window.Engine.toggleAutoMine) window.Engine.toggleAutoMine(true);
-                return;
-            }
-        }
         this.executeToggleBotMode();
     },
 

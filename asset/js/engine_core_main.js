@@ -150,7 +150,7 @@ var Engine = {
 
         STATE.blocksSinceLastRetarget = (STATE.blocksSinceLastRetarget || 0) + 1;
 
-        if (STATE.blocksSinceLastRetarget < 5) {
+        if (STATE.blocksSinceLastRetarget < 16) {  //ปรับ Difficulty Adjustment
             STATE.lastBlockTimeMs = Date.now();
             this.updateHashRateDisplay();
             return;
@@ -168,7 +168,7 @@ var Engine = {
             if (b.timeTaken !== undefined) {
                 validTimes.push(b.timeTaken);
             }
-            if (validTimes.length >= 5) break;
+            if (validTimes.length >= 16) break; //ปรับ Difficulty Adjustment
         }
 
         let avgSec = 60; 
@@ -194,9 +194,9 @@ var Engine = {
             if(bitsEl) bitsEl.innerText = '0x' + hex + '00ffff (' + newDiff + ' Zeros)';
 
             let dirText = diffChange > 0 ? "เพิ่มขึ้น" : "ลดลง"; let levelText = Math.abs(diffChange);
-            UI.addLiveNodeLog(`⚙️ [ปรับความยากอัตโนมัติ] ครบกำหนดรอบ 5 บล็อก (Epoch)! เฉลี่ย ${Math.floor(avgSec)} วิ./บล็อก เครือข่าย${dirText} ${levelText} ระดับ -> เป็น Target ${newDiff}`, 'da');
+            UI.addLiveNodeLog(`⚙️ [ปรับความยากอัตโนมัติ] Difficulty Adjustment ครบกำหนดรอบ 16 บล็อก (Epoch)! เฉลี่ย ${Math.floor(avgSec)} วิ./บล็อก เครือข่าย${dirText} ${levelText} ระดับ -> เป็น Target ${newDiff}`, 'da'); //ปรับ UI Difficulty Adjustment
         } else {
-            UI.addLiveNodeLog(`⚙️ [ปรับความยากอัตโนมัติ] ครบกำหนดรอบ 5 บล็อก (Epoch)! เฉลี่ย ${Math.floor(avgSec)} วิ./บล็อก อยู่ในเกณฑ์เหมาะสม คง Target ${currentDiff} ไว้ตามเดิม`, 'da');
+            UI.addLiveNodeLog(`⚙️ [ปรับความยากอัตโนมัติ] Difficulty Adjustment ครบกำหนดรอบ 16 บล็อก (Epoch)! เฉลี่ย ${Math.floor(avgSec)} วิ./บล็อก อยู่ในเกณฑ์เหมาะสม คง Target ${currentDiff} ไว้ตามเดิม`, 'da'); //ปรับ UI Difficulty Adjustment
         }
 
         STATE.lastBlockTimeMs = Date.now(); 
